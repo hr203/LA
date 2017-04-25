@@ -1,0 +1,2548 @@
+MODULE adaptint
+
+  !USE DECLARE
+!use nrtype
+
+  DOUBLE PRECISION, PARAMETER :: X02AJF = 1.11022302462516D-16 
+  DOUBLE PRECISION, PARAMETER :: X02AMF = 2.22507385850721D-308
+  ! THE 'SAFE RANGE' PARAMETER
+  ! I.E. THE SMALLEST POSITIVE MODEL NUMBER Z SUCH THAT
+  ! FOR ANY X WHICH SATISFIES X.GE.Z AND X.LE.1/Z
+  ! THE FOLLOWING CAN BE COMPUTED WITHOUT OVERFLOW, UNDERFLOW OR OTHER
+  ! ERROR
+  
+  !    -X
+  !    1.0/X
+  !    SQRT(X)
+  !    LOG(X)
+  !    EXP(LOG(X))
+  !    Y**(LOG(X)/LOG(Y)) FOR ANY Y
+  
+
+CONTAINS
+
+
+  SUBROUTINE D01AJX(LIMIT,LAST,MAXERR,ERMAX,ELIST,IORD,NRMAX)
+   ! USE declare
+!use nrtype
+    IMPLICIT NONE
+
+    ! BASED ON QUADPACK ROUTINE  QSORT.
+    !       PURPOSE
+    !          THIS ROUTINE MAINTAINS THE DESCENDING ORDERING IN THE
+    !          LIST OF THE LOCAL ERROR ESTIMATES RESULTING FROM THE
+    !          INTERVAL SUBDIVISION PROCESS. AT EACH CALL TWO ERROR
+    !          ESTIMATES ARE INSERTED USING THE SEQUENTIAL SEARCH
+    !          TOP-DOWN FOR THE LARGEST ERROR ESTIMATE AND BOTTOM-UP
+    !          FOR THE SMALLEST ERROR ESTIMATE.
+    !       PARAMETERS (MEANING AT OUTPUT)
+    !          LIMIT  - INTEGER
+    !                   MAXIMUM NUMBER OF ERROR ESTIMATES THE LIST CAN
+    !                   CONTAIN
+    !          LAST   - INTEGER
+    !                   NUMBER OF ERROR ESTIMATES CURRENTLY IN THE LIST
+    !          MAXERR - INTEGER
+    !                   MAXERR POINTS TO THE NRMAX-TH LARGEST ERROR
+    !                   ESTIMATE CURRENTLY IN THE LIST
+    !          ERMAX  - REAL
+    !                   NRMAX-TH LARGEST ERROR ESTIMATE
+    !                   ERMAX = ELIST(MAXERR)
+    !          ELIST  - REAL
+    !                   VECTOR OF DIMENSION LAST CONTAINING THE ERROR
+    !                   ESTIMATES
+    !          IORD   - INTEGER
+    !                   VECTOR OF DIMENSION LAST, THE FIRST K ELEMENTS
+    !                   OF WHICH CONTAIN POINTERS TO THE ERROR ESTIMATES
+    !                   SUCH THAT ELIST(IORD(1)),... , ELIST(IORD(K))
+    !                   FORM A DECREASING SEQUENCE, WITH
+    !                   K = LAST IF LAST <= (LIMIT/2+2), AND
+    !                   K = LIMIT+1-LAST OTHERWISE
+    !          NRMAX  - INTEGER
+    !                   MAXERR = IORD(NRMAX)
+
+    ! .. Scalar Arguments ..
+    DOUBLE PRECISION :: ERMAX
+    INTEGER :: LAST, LIMIT, MAXERR, NRMAX
+    ! .. Array Arguments ..
+    DOUBLE PRECISION, DIMENSION(LAST) :: ELIST
+    INTEGER, DIMENSION(LAST) :: IORD
+    ! .. Local Scalars ..
+    DOUBLE PRECISION :: ERRMAX, ERRMIN
+    INTEGER :: I, IBEG, IDO, ISUCC, J, JBND, JUPBN, K
+    ! .. Executable Statements ..
+    !       CHECK WHETHER THE LIST CONTAINS MORE THAN TWO ERROR
+    !       ESTIMATES.
+
+    IF (LAST > 2) GO TO 20
+    IORD(1) = 1
+    IORD(2) = 2
+    GO TO 180
+
+    !       THIS PART OF THE ROUTINE IS ONLY EXECUTED IF, DUE TO A
+    !       DIFFICULT INTEGRAND, SUBDIVISION INCREASED THE ERROR
+    !       ESTIMATE. IN THE NORMAL CASE THE INSERT PROCEDURE SHOULD
+    !       START AFTER THE NRMAX-TH LARGEST ERROR ESTIMATE.
+
+20  ERRMAX = ELIST(MAXERR)
+    IF (NRMAX == 1) GO TO 60
+    IDO = NRMAX - 1
+    DO I = 1, IDO
+       ISUCC = IORD(NRMAX-1)
+       !    ***JUMP OUT OF DO-LOOP
+       IF (ERRMAX <= ELIST(ISUCC)) GO TO 60
+       IORD(NRMAX) = ISUCC
+       NRMAX = NRMAX - 1
+    ENDDO
+
+
+    !       COMPUTE THE NUMBER OF ELEMENTS IN THE LIST TO BE MAINTAINED
+    !       IN DESCENDING ORDER. THIS NUMBER DEPENDS ON THE NUMBER OF
+    !       SUBDIVISIONS STILL ALLOWED.
+
+60  JUPBN = LAST
+    IF (LAST > (LIMIT/2+2)) JUPBN = LIMIT + 3 - LAST
+    ERRMIN = ELIST(LAST)
+
+    !       INSERT ERRMAX BY TRAVERSING THE LIST TOP-DOWN, STARTING
+    !       COMPARISON FROM THE ELEMENT ELIST(IORD(NRMAX+1)).
+
+    JBND = JUPBN - 1
+    IBEG = NRMAX + 1
+    IF (IBEG > JBND) GO TO 100
+    DO I = IBEG, JBND
+       ISUCC = IORD(I)
+       !    ***JUMP OUT OF DO-LOOP
+       IF (ERRMAX >= ELIST(ISUCC)) GO TO 120
+       IORD(I-1) = ISUCC
+    ENDDO
+
+100 IORD(JBND) = MAXERR
+    IORD(JUPBN) = LAST
+    GO TO 180
+
+    !       INSERT ERRMIN BY TRAVERSING THE LIST BOTTOM-UP.
+
+120 IORD(I-1) = MAXERR
+    K = JBND
+    DO J = I, JBND
+       ISUCC = IORD(K)
+       !    ***JUMP OUT OF DO-LOOP
+       IF (ERRMIN < ELIST(ISUCC)) GO TO 160
+       IORD(K+1) = ISUCC
+       K = K - 1
+    ENDDO
+
+    IORD(I) = LAST
+    GO TO 180
+160 IORD(K+1) = LAST
+
+    !       SET MAXERR AND ERMAX.
+
+180 MAXERR = IORD(NRMAX)
+    ERMAX = ELIST(MAXERR)
+    RETURN
+  END SUBROUTINE D01AJX
+
+
+  SUBROUTINE D01AJY(N,EPSTAB,RESULT,ABSERR,RES3LA,NRES)
+
+  !  USE declare
+!use nrtype
+    IMPLICIT NONE
+
+    ! BASED ON QUADPACK ROUTINE  QEXT.
+    !       PURPOSE
+    !          THE ROUTINE DETERMINES THE LIMIT OF A GIVEN SEQUENCE OF
+    !          APPROXIMATIONS, BY MEANS OF THE EPSILON ALGORITHM
+    !          OF P. WYNN.
+    !          AN ESTIMATE OF THE ABSOLUTE ERROR IS ALSO GIVEN.
+    !          THE CONDENSED EPSILON TABLE IS COMPUTED. ONLY THOSE
+    !          ELEMENTS NEEDED FOR THE COMPUTATION OF THE NEXT DIAGONAL
+    !          ARE PRESERVED.
+    !       PARAMETERS
+    !          N      - INTEGER
+    !                   EPSTAB(N) CONTAINS THE NEW ELEMENT IN THE
+    !                   FIRST COLUMN OF THE EPSILON TABLE.
+    !          EPSTAB - REAL
+    !                   VECTOR OF DIMENSION 52 CONTAINING THE ELEMENTS
+    !                   OF THE TWO LOWER DIAGONALS OF THE TRIANGULAR
+    !                   EPSILON TABLE
+    !                   THE ELEMENTS ARE NUMBERED STARTING AT THE
+    !                   RIGHT-HAND CORNER OF THE TRIANGLE.
+    !          RESULT - REAL
+    !                   RESULTING APPROXIMATION TO THE INTEGRAL
+    !          ABSERR - REAL
+    !                   ESTIMATE OF THE ABSOLUTE ERROR COMPUTED FROM
+    !                   RESULT AND THE 3 PREVIOUS RESULTS
+    !          RES3LA - REAL
+    !                   VECTOR OF DIMENSION 3 CONTAINING THE LAST 3
+    !                   RESULTS
+    !          NRES   - INTEGER
+    !                   NUMBER OF CALLS TO THE ROUTINE
+    !                   (SHOULD BE ZERO AT FIRST CALL)
+
+    ! .. Scalar Arguments ..
+    DOUBLE PRECISION :: ABSERR, RESULT
+    INTEGER :: N, NRES
+    ! .. Array Arguments ..
+    DOUBLE PRECISION, DIMENSION(52) :: EPSTAB
+    DOUBLE PRECISION, DIMENSION(3) ::  RES3LA
+    ! .. Local Scalars ..
+    DOUBLE PRECISION :: DELTA1, DELTA2, DELTA3, E0, E1, E1ABS, E2, E3,&
+         &EPMACH, EPSINF, ERR1, ERR2, ERR3, ERROR, &
+         &OFLOW,RES, SS, TOL1, TOL2, TOL3, UFLOW
+    INTEGER :: I, IB, IB2, IE, INDX, K1, K2, K3, LIMEXP,NEWELM, NUM
+
+    ! .. Executable Statements ..
+    !       LIST OF MAJOR VARIABLES
+    !       -----------------------
+    !       E0     - THE 4 ELEMENTS ON WHICH THE
+    !       E1       COMPUTATION OF A NEW ELEMENT IN
+    !       E2       THE EPSILON TABLE IS BASED
+    !       E3                 E0
+    !                    E3    E1    NEW
+    !                          E2
+    !       NEWELM - NUMBER OF ELEMENTS TO BE COMPUTED IN THE NEW
+    !                DIAGONAL
+    !       ERROR  - ERROR = ABS(E1-E0)+ABS(E2-E1)+ABS(NEW-E2)
+    !       RESULT - THE ELEMENT IN THE NEW DIAGONAL WITH LEAST VALUE
+    !                OF ERROR
+    !       LIMEXP IS THE MAXIMUM NUMBER OF ELEMENTS THE EPSILON TABLE
+    !       CAN CONTAIN. IF THIS NUMBER IS REACHED, THE UPPER DIAGONAL
+    !       OF THE EPSILON TABLE IS DELETED.
+
+    EPMACH = X02AJF
+    UFLOW = X02AMF
+    OFLOW = 1.0D+00/UFLOW
+    NRES = NRES + 1
+    ABSERR = OFLOW
+    RESULT = EPSTAB(N)
+    IF (N < 3) GO TO 200
+    LIMEXP = 50
+    EPSTAB(N+2) = EPSTAB(N)
+    NEWELM = (N-1)/2
+    EPSTAB(N) = OFLOW
+    NUM = N
+    K1 = N
+    DO I = 1, NEWELM
+       K2 = K1 - 1
+       K3 = K1 - 2
+       RES = EPSTAB(K1+2)
+       E0 = EPSTAB(K3)
+       E1 = EPSTAB(K2)
+       E2 = RES
+       E1ABS = ABS(E1)
+       DELTA2 = E2 - E1
+       ERR2 = ABS(DELTA2)
+       TOL2 = MAX(ABS(E2),E1ABS)*EPMACH
+       DELTA3 = E1 - E0
+       ERR3 = ABS(DELTA3)
+       TOL3 = MAX(E1ABS,ABS(E0))*EPMACH
+       IF (ERR2 > TOL2 .OR. ERR3 > TOL3) GO TO 20
+
+       !       IF E0, E1 AND E2 ARE EQUAL TO WITHIN MACHINE ACCURACY,
+       !       CONVERGENCE IS ASSUMED.
+       !       RESULT = E2
+       !       ABSERR = ABS(E1-E0)+ABS(E2-E1)
+
+       RESULT = RES
+       ABSERR = ERR2 + ERR3
+       !    ***JUMP OUT OF DO-LOOP
+       GO TO 200
+20     E3 = EPSTAB(K1)
+       EPSTAB(K1) = E1
+       DELTA1 = E1 - E3
+       ERR1 = ABS(DELTA1)
+       TOL1 = MAX(E1ABS,ABS(E3))*EPMACH
+
+       !       IF TWO ELEMENTS ARE VERY CLOSE TO EACH OTHER, OMIT A PART
+       !       OF THE TABLE BY ADJUSTING THE VALUE OF N
+
+       IF (ERR1.LE.TOL1 .OR. ERR2.LE.TOL2 .OR. ERR3.LE.TOL3) GO TO 40
+       SS = 1.0D+00/DELTA1 + 1.0D+00/DELTA2 - 1.0D+00/DELTA3
+       EPSINF = ABS(SS*E1)
+
+       !       TEST TO DETECT IRREGULAR BEHAVIOUR IN THE TABLE, AND
+       !       EVENTUALLY OMIT A PART OF THE TABLE ADJUSTING THE VALUE
+       !       OF N.
+
+       IF (EPSINF.GT.1.0D-04) GO TO 60
+40     N = I + I - 1
+       !    ***JUMP OUT OF DO-LOOP
+       GO TO 100
+
+       !       COMPUTE A NEW ELEMENT AND EVENTUALLY ADJUST THE VALUE OF
+       !       RESULT.
+
+60     RES = E1 + 1.0D+00/SS
+       EPSTAB(K1) = RES
+       K1 = K1 - 2
+       ERROR = ERR2 + ABS(RES-E2) + ERR3
+       IF (ERROR.GT.ABSERR) GO TO 80
+       ABSERR = ERROR
+       RESULT = RES
+    ENDDO
+80  CONTINUE
+
+
+    !       SHIFT THE TABLE.
+
+100 IF (N.EQ.LIMEXP) N = 2*(LIMEXP/2) - 1
+    IB = 1
+    IF ((NUM/2)*2.EQ.NUM) IB = 2
+    IE = NEWELM + 1
+    DO I = 1, IE
+       IB2 = IB + 2
+       EPSTAB(IB) = EPSTAB(IB2)
+       IB = IB2
+    ENDDO
+
+    IF (NUM.EQ.N) GO TO 160
+    INDX = NUM - N + 1
+    DO I = 1, N
+       EPSTAB(I) = EPSTAB(INDX)
+       INDX = INDX + 1
+    ENDDO
+
+160 IF (NRES.GE.4) GO TO 180
+    RES3LA(NRES) = RESULT
+    ABSERR = OFLOW
+    GO TO 200
+
+    !       COMPUTE ERROR ESTIMATE
+
+180 ABSERR = ABS(RESULT-RES3LA(3)) + ABS(RESULT-RES3LA(2)) + &
+         &ABS(RESULT-RES3LA(1))
+    RES3LA(1) = RES3LA(2)
+    RES3LA(2) = RES3LA(3)
+    RES3LA(3) = RESULT
+200 ABSERR = MAX(ABSERR,0.5D+00*EPMACH*ABS(RESULT))
+    RETURN
+  END SUBROUTINE D01AJY
+
+
+  SUBROUTINE D01AMF(F,BOUND,INF,EPSABS,EPSREL,RES,ABSERR,WORK,&
+       &LWORK,IWORK,LIWORK,IFAIL)
+
+   ! USE declare
+!use nrtype
+    IMPLICIT NONE
+
+    ! BASED ON THE QUADPACK ROUTINE  QAGI.
+    ! D01AMF CALCULATES AN APPROXIMATION TO THE INTEGRAL OF A FUNCTION
+    ! OVER THE INTERVAL (A,B) , WHERE A AND/OR B IS INFINITE.
+    ! D01AMF ITSELF IS ESSENTIALLY A DUMMY ROUTINE WHOSE FUNCTION IS TO
+    ! PARTITION THE WORK ARRAYS WORK AND IWORK FOR USE BY D01AMV.
+    ! WORK IS PARTITIONED INTO 4 ARRAYS EACH OF SIZE LIMIT, WHERE
+    ! LIMIT = MIN(LWORK/4, LIMIT).
+    ! IWORK IS A SINGLE ARRAY IN D01AMV OF SIZE LIMIT.
+    ! .. Parameters ..
+    DOUBLE PRECISION, PARAMETER :: ZERO=0.0D0
+    CHARACTER(6), PARAMETER :: SRNAME='D01AMF'
+    ! .. Scalar Arguments ..
+    DOUBLE PRECISION :: ABSERR, BOUND, EPSABS, EPSREL, RES
+    INTEGER :: IFAIL, INF, LIWORK, LWORK
+    ! .. Array Arguments ..
+    DOUBLE PRECISION, DIMENSION(LWORK) :: WORK
+    INTEGER, DIMENSION(LIWORK) :: IWORK
+    ! .. Function Arguments ..
+    INTERFACE
+       FUNCTION F(x)
+         !USE declare
+!use nrtype
+         DOUBLE PRECISION, INTENT(IN) :: x
+         DOUBLE PRECISION :: F
+       END FUNCTION F
+    END INTERFACE
+    ! .. Local Scalars ..
+    INTEGER :: I, IBL, IEL, IER, IERR, IRL, J, JBL, JEL, JRL, &
+         &K, LAST, LIMIT, NEVAL, NREC
+    CHARACTER(1) :: ORDER
+    ! .. Local Arrays ..
+    CHARACTER(80), DIMENSION(2) :: REC
+
+    ! .. Executable Statements ..
+    IER = IFAIL
+    ! CHECK THAT MINIMUM REQUIREMENTS ARE MET
+    IF (LWORK.LT.4 .OR. LIWORK.LT.1) GO TO 100
+    IF (INF.NE.-1 .AND. INF.NE.1 .AND. INF.NE.2) GO TO 120
+    ! LIMIT = UPPER BOUND ON NUMBER OF SUBINTERVALS
+    LIMIT = MIN(LWORK/4,LIWORK)
+    ! SET UP BASE ADDRESSES FOR WORK ARRAYS
+    IBL = LIMIT + 1
+    IEL = LIMIT + IBL
+    IRL = LIMIT + IEL
+    ! PERFORM INTEGRATION
+    CALL D01AMV(F,BOUND,INF,ABS(EPSABS),ABS(EPSREL),WORK(1),WORK(IBL),&
+         &WORK(IEL),WORK(IRL),LIMIT,IWORK,LIMIT,RES,ABSERR,&
+         &NEVAL,IER)
+
+    ! RE-ORDER THE ELEMENTS OF WORK SO THAT THE RIGHT END-POINTS OF THE
+    ! SUB-INTERVALS (BLIST), ABSOLUTE ERROR ESTIMATES (ELIST) AND
+    ! APPROXIMATIONS TO THE INTEGRAL OVER THE SUB-INTERVALS (RLIST)
+    ! ARE EASILY ACCESSIBLE TO THE USER (SEE D01AMV).
+    LAST = IWORK(1)
+    IF (IER.LT.6 .AND. LAST.GE.1) THEN
+       JBL = LAST
+       JEL = 2*LAST
+       JRL = 3*LAST
+       IF (LAST.LT.LIMIT) THEN
+          DO I = 1, LAST
+             WORK(JBL+I) = WORK(IBL+I-1)
+          ENDDO
+
+          DO I = 1, LAST
+             WORK(JEL+I) = WORK(IEL+I-1)
+          ENDDO
+
+          DO I = 1, LAST
+             WORK(JRL+I) = WORK(IRL+I-1)
+          ENDDO
+
+       END IF
+       !    ZERO THE REMAINING PART OF WORK
+       K = 4*LAST + 1
+       DO J = K, LWORK
+          WORK(J) = ZERO
+       ENDDO
+
+       !    SORT THE ELEMENTS OF ALIST INTO ASCENDING ORDER USING M01DAF
+       !    AND M01EAF. ON EXIT FROM M01DAF, IWORK(1), ... ,IWORK(LAST)
+       !    CONTAIN THE RANKS OF ALIST(1), ... ,ALIST(LAST).
+       IERR = 0
+       ORDER = 'A'
+       CALL M01DAF(WORK(1),1,LAST,ORDER,IWORK,IERR)
+       CALL M01EAF(WORK(1),1,LAST,IWORK,IERR)
+       !    USE IWORK(1), ... ,IWORK(LAST) TO RECOVER THE VALUES OF
+       !    BLIST(I), ELIST(I) AND RLIST(I) CORRESPONDING TO ALIST(I)
+       !    AS RETURNED BY M01EAF, WHERE I = 1, 2, ...,LAST.
+       JBL = JBL + 1
+       CALL M01EAF(WORK(JBL),1,LAST,IWORK,IERR)
+       JEL = JEL + 1
+       CALL M01EAF(WORK(JEL),1,LAST,IWORK,IERR)
+       JRL = JRL + 1
+       CALL M01EAF(WORK(JRL),1,LAST,IWORK,IERR)
+       IWORK(1) = LAST
+    END IF
+    IF (IER.NE.0) GO TO 140
+    IFAIL = 0
+    GO TO 160
+    ! ERROR 6 = INSUFFICIENT WORKSPACE
+100 IER = 6
+    WRITE (REC,FMT=99999) LWORK, LIWORK
+    GO TO 140
+120 IER = 6
+    WRITE (REC,FMT=99994) INF
+140 NREC = 2
+    IF (IER.EQ.1) THEN
+       WRITE (REC,FMT=99998) LIMIT, LWORK, LIWORK
+    ELSE IF (IER.EQ.2) THEN
+       WRITE (REC,FMT=99997) EPSABS, EPSREL
+    ELSE IF (IER.EQ.3) THEN
+       NREC = 0
+    ELSE IF (IER.EQ.4) THEN
+       WRITE (REC(1),FMT=99996)
+       NREC = 1
+    ELSE IF (IER.EQ.5) THEN
+       WRITE (REC(1),FMT=99995)
+       NREC = 1
+    END IF
+    IFAIL = P01ABF(IFAIL,IER,SRNAME,NREC,REC)
+160 RETURN
+
+99999 FORMAT (' ** On entry, LW.lt.4 or LIW.lt.1:',/'    LW = ',I16,&
+         &'  LIW = ',I16)
+99998 FORMAT (' ** The maximum number of subdivisions (LIMIT) has been',&
+         &' reached:',/'    LIMIT = ',I16,'   LW = ',I16,'   LIW = ',I16)
+99997 FORMAT (' ** Round-off error prevents the requested tolerance fr',&
+         &'om being achieved:',/'    EPSABS = ',1P,D8.1,&
+         &'  EPSREL = ',1P,D8.1)
+99996 FORMAT (' ** Round-off error is detected in the extrapolation table')
+99995 FORMAT (' ** The integral is probably divergent or slowly convergent')
+99994 FORMAT (' ** On entry, INF.ne.-1 and INF.ne.1 and INF.ne.2',/'  ',&
+         &'  INF =',I16)
+  END SUBROUTINE D01AMF
+
+
+  SUBROUTINE D01AMV(F,BOUND,INF,EPSABS,EPSREL,ALIST,BLIST,ELIST,&
+       &RLIST,LIMIT,IORD,LIORD,RES,ABSERR,NEVAL,IER)
+
+   ! USE declare
+!use nrtype
+    IMPLICIT NONE
+
+    ! BASED ON QUADPACK ROUTINE  QAGI.
+    !    PURPOSE
+    !       THE ROUTINE CALCULATES AN APPROXIMATION  RES  TO A GIVEN
+    !       INTEGRAL    I = INTEGRAL OF  F  OVER (BOUND,+INFINITY)
+    !                OR I = INTEGRAL OF  F  OVER (-INFINITY,BOUND)
+    !                OR I = INTEGRAL OF  F  OVER (-INFINITY,+INFINITY),
+    !       HOPEFULLY SATISFYING FOLLOWING CLAIM FOR ACCURACY
+    !       ABS(I-RES).LE.MAX(EPSABS,EPSREL*ABS(I)).
+    !    PARAMETERS
+    !     ON ENTRY
+    !        F      - REAL
+    !                 FUNCTION SUBPROGRAM DEFINING THE INTEGRAND
+    !                 FUNCTION F(X). THE ACTUAL NAME FOR F NEEDS TO BE
+    !                 DECLARED E X T E R N A L IN THE DRIVER PROGRAM.
+    !        BOUND  - REAL
+    !                 FINITE BOUND OF INTEGRATION RANGE
+    !                 (HAS NO MEANING IF INTERVAL IS DOUBLY-INFINITE)
+    !        INF    - REAL
+    !                 INDICATING THE KIND OF INTEGRATION RANGE INVOLVED
+    !                 INF = 1 CORRESPONDS TO  (BOUND,+INFINITY),
+    !                 INF = -1            TO  (-INFINITY,BOUND),
+    !                 INF = 2             TO (-INFINITY,+INFINITY).
+    !        EPSABS - REAL
+    !                 ABSOLUTE ACCURACY REQUESTED
+    !        EPSREL - REAL
+    !                 RELATIVE ACCURACY REQUESTED
+    !        ALIST,BLIST,ELIST,RLIST
+    !               - REAL WORK ARRAYS (FUNCTIONS DESCRIBED BELOW)
+    !        LIMIT  - INTEGER
+    !                 GIVES AN UPPERBOUND ON THE NUMBER OF SUBINTERVALS
+    !                 IN THE PARTITION OF (A,B), LIMIT.GE.1.
+    !        IORD   - INTEGER
+    !                 WORK ARRAY OF DIMENSION LIORD
+    !        LIORD  - INTEGER
+    !                 LENGTH OF IORD (=LIMIT)
+    !     ON RETURN
+    !        RES - REAL
+    !                 APPROXIMATION TO THE INTEGRAL
+    !        ABSERR - REAL
+    !                 ESTIMATE OF THE MODULUS OF THE ABSOLUTE ERROR,
+    !                 WHICH SHOULD EQUAL OR EXCEED ABS(I-RES)
+    !        NEVAL  - INTEGER
+    !                 NUMBER OF INTEGRAND EVALUATIONS
+    !        IER    - INTEGER
+    !                 IER = 0 NORMAL AND RELIABLE TERMINATION OF THE
+    !                         ROUTINE. IT IS ASSUMED THAT THE REQUESTED
+    !                         ACCURACY HAS BEEN ACHIEVED.
+    !               - IER.GT.0 ABNORMAL TERMINATION OF THE ROUTINE. THE
+    !                         ESTIMATES FOR RES AND ERROR ARE LESS
+    !                         RELIABLE. IT IS ASSUMED THAT THE REQUESTED
+    !                         ACCURACY HAS NOT BEEN ACHIEVED.
+    !                 IER = 1 MAXIMUM NUMBER OF SUBDIVISIONS ALLOWED
+    !                         HAS BEEN ACHIEVED. ONE CAN ALLOW MORE
+    !                         SUBDIVISIONS BY INCREASING THE DATA VALUE
+    !                     OF LIMIT IN D01AMV (AND TAKING THE ACCORDING
+    !                         DIMENSION ADJUSTMENTS INTO ACCOUNT).
+    !                         HOWEVER, IF THIS YIELDS NO IMPROVEMENT
+    !                         IT IS ADVISED TO ANALYZE THE INTEGRAND
+    !                         IN ORDER TO DETERMINE THE INTEGRATION
+    !                         DIFFICULTIES. IF THE POSITION OF A LOCAL
+    !                         DIFFICULTY CAN BE DETERMINED (E.G.
+    !                         SINGULARITY, DISCONTINUITY WITHIN THE
+    !                         INTERVAL) ONE WILL PROBABLY GAIN FROM
+    !                         SPLITTING UP THE INTERVAL AT THIS POINT
+    !                         AND CALLING THE INTEGRATOR ON THE
+    !                         SUBRANGES. IF POSSIBLE, AN APPROPRIATE
+    !                         SPECIAL-PURPOSE INTEGRATOR SHOULD BE USED,
+    !                         WHICH IS DESIGNED FOR HANDLING THE TYPE
+    !                         OF DIFFICULTY INVOLVED.
+    !                     = 2 THE OCCURRENCE OF ROUNDOFF ERROR IS
+    !                         DETECTED, WHICH PREVENTS THE REQUESTED
+    !                         TOLERANCE FROM BEING ACHIEVED.
+    !                         THE ERROR MAY BE UNDER-ESTIMATED.
+    !                     = 3 EXTREMELY BAD INTEGRAND BEHAVIOUR OCCURS
+    !                         AT SOME POINTS OF THE INTEGRATION
+    !                         INTERVAL.
+    !                     = 4 THE ALGORITHM DOES NOT CONVERGE.
+    !                         ROUNDOFF ERROR IS DETECTED IN THE
+    !                         EXTRAPOLATION TABLE.
+    !                         IT IS ASSUMED THAT THE REQUESTED TOLERANCE
+    !                         CANNOT BE ACHIEVED, AND THAT THE RETURNED
+    !                         RES IS THE BEST WHICH CAN BE OBTAINED.
+    !                     = 5 THE INTEGRAL IS PROBABLY DIVERGENT, OR
+    !                         SLOWLY CONVERGENT. IT MUST BE NOTED THAT
+    !                         DIVERGENCE CAN OCCUR WITH ANY OTHER VALUE
+    !                         OF IER.
+    ! .. Scalar Arguments ..
+    DOUBLE PRECISION :: ABSERR, BOUND, EPSABS, EPSREL, RES
+    INTEGER :: IER, INF, LIMIT, LIORD, NEVAL
+    ! .. Array Arguments ..
+    DOUBLE PRECISION, DIMENSION(LIMIT) :: ALIST, BLIST, ELIST,RLIST
+    INTEGER, DIMENSION(LIORD) :: IORD
+    ! .. Function Arguments ..
+    INTERFACE
+       FUNCTION F(x)
+        ! USE declare
+!use nrtype
+         DOUBLE PRECISION, INTENT(IN) :: x
+         DOUBLE PRECISION :: F
+       END FUNCTION F
+    END INTERFACE
+    ! .. Local Scalars ..
+    DOUBLE PRECISION :: A1, A2, ABSEPS, AREA, AREA1, AREA12, AREA2, B1,&
+         &B2, BOUN, CORREC, DEFAB1, DEFAB2, DEFABS, DRES,&
+         &EPMACH, ERLARG, ERLAST, ERRBND, ERRMAX, ERRO12,&
+         &ERROR1, ERROR2, ERRSUM, ERTEST, OFLOW, RESABS,&
+         &RESEPS, SMALL, UFLOW
+    INTEGER :: ID, IERRO, IERS, IROFF1, IROFF2, IROFF3, JUPBND,&
+         &K, KSGN, KTMIN, LAST, MAXERR, NERR, NRES, NRMAX, NUMRL2
+    LOGICAL :: EXTRAP, NOEXT
+    ! .. Local Arrays ..
+    DOUBLE PRECISION, DIMENSION(3) :: RES3LA
+    DOUBLE PRECISION, DIMENSION(52) ::  RLIST2
+    CHARACTER(80), DIMENSION(2) :: REC
+
+    ! .. Executable Statements ..
+
+    !        THE DIMENSION OF RLIST2 IS DETERMINED BY THE VALUE OF
+    !        LIMEXP IN SUBROUTINE D01AJY.
+
+    !        LIST OF MAJOR VARIABLES
+    !        -----------------------
+
+    !       ALIST     - LIST OF LEFT END POINTS OF ALL SUBINTERVALS
+    !                   CONSIDERED UP TO NOW
+    !       BLIST     - LIST OF RIGHT END POINTS OF ALL SUBINTERVALS
+    !                   CONSIDERED UP TO NOW
+    !       RLIST(I)  - APPROXIMATION TO THE INTEGRAL OVER
+    !                   (ALIST(I),BLIST(I))
+    !       RLIST2    - ARRAY OF DIMENSION AT LEAST (LIMEXP+2),
+    !                   CONTAINING THE PART OF THE EPSILON TABLE
+    !                   WHICH IS STILL NEEDED FOR FURTHER COMPUTATIONS
+    !       ELIST(I)  - ERROR ESTIMATE APPLYING TO RLIST(I)
+    !       MAXERR    - POINTER TO THE INTERVAL WITH LARGEST ERROR
+    !                   ESTIMATE
+    !       ERRMAX    - ELIST(MAXERR)
+    !       ERLAST    - ERROR ON THE INTERVAL CURRENTLY SUBDIVIDED
+    !                   (BEFORE THAT SUBDIVISION HAS TAKEN PLACE)
+    !       AREA      - SUM OF THE INTEGRALS OVER THE SUBINTERVALS
+    !       ERRSUM    - SUM OF THE ERRORS OVER THE SUBINTERVALS
+    !       ERRBND    - REQUESTED ACCURACY MAX(EPSABS,EPSREL*
+    !                   ABS(RES))
+    !       *****1    - VARIABLE FOR THE LEFT SUBINTERVAL
+    !       *****2    - VARIABLE FOR THE RIGHT SUBINTERVAL
+    !       LAST      - INDEX FOR SUBDIVISION
+    !       NRES      - NUMBER OF CALLS TO THE EXTRAPOLATION ROUTINE
+    !       NUMRL2    - NUMBER OF ELEMENTS CURRENTLY IN RLIST2. IF AN
+    !                   APPROPRIATE APPROXIMATION TO THE COMPOUNDED
+    !                   INTEGRAL HAS BEEN OBTAINED, IT IS PUT IN
+    !                   RLIST2(NUMRL2) AFTER NUMRL2 HAS BEEN INCREASED
+    !                   BY ONE.
+    !       SMALL     - LENGTH OF THE SMALLEST INTERVAL CONSIDERED UP
+    !                   TO NOW, MULTIPLIED BY 1.5
+    !       ERLARG    - SUM OF THE ERRORS OVER THE INTERVALS LARGER
+    !                   THAN THE SMALLEST INTERVAL CONSIDERED UP TO NOW
+    !       EXTRAP    - LOGICAL VARIABLE DENOTING THAT THE ROUTINE
+    !                   IS ATTEMPTING TO PERFORM EXTRAPOLATION. I.E.
+    !                   BEFORE SUBDIVIDING THE SMALLEST INTERVAL WE
+    !                   TRY TO DECREASE THE VALUE OF ERLARG.
+    !       NOEXT     - LOGICAL VARIABLE DENOTING THAT EXTRAPOLATION
+    !                   IS NO LONGER ALLOWED (TRUE-VALUE)
+
+    EPMACH = X02AJF
+    UFLOW = X02AMF
+    OFLOW = 1.0D+00/UFLOW
+
+    !       TEST ON VALIDITY OF PARAMETERS
+    !       -----------------------------
+
+    IERS = IER
+    IER = 0
+    NEVAL = 0
+    LAST = 0
+    RES = 0.0D+00
+    ABSERR = 0.0D+00
+    ALIST(1) = 0.0D+00
+    BLIST(1) = 1.0D+00
+    RLIST(1) = 0.0D+00
+    ELIST(1) = 0.0D+00
+    IORD(1) = 0
+
+    !       FIRST APPROXIMATION TO THE INTEGRAL
+    !       -----------------------------------
+
+    !       DETERMINE THE INTERVAL TO BE MAPPED ONTO (0,1).
+    !       IF INF = 2 THE INTEGRAL IS COMPUTED AS I = I1+I2, WHERE
+    !       I1 = INTEGRAL OF F OVER (-INFINITY,0),
+    !       I2 = INTEGRAL OF F OVER (0,+INFINITY).
+
+    BOUN = BOUND
+    IF (INF.EQ.2) BOUN = 0.0D+00
+    CALL D01AMZ(F,BOUN,INF,0.0D+00,1.0D+00,RES,ABSERR,DEFABS,RESABS)
+
+    !       TEST ON ACCURACY
+
+    LAST = 1
+    RLIST(1) = RES
+    ELIST(1) = ABSERR
+    IORD(1) = 1
+    DRES = ABS(RES)
+    ERRBND = MAX(EPSABS,EPSREL*DRES)
+    IF ((ABSERR.LE.ERRBND .AND. ABSERR.NE.RESABS)&
+         &.OR. ABSERR.EQ.0.0D+00) GO TO 320
+    IF (LIMIT.EQ.1) IER = 1
+    IF (ABSERR.LE.1.0D+02*EPMACH*DEFABS .AND. ABSERR.GT.ERRBND) IER = 2
+    IF (IER.NE.0) GO TO 320
+
+    !       INITIALIZATION
+    !       --------------
+
+    RLIST2(1) = RES
+    ERRMAX = ABSERR
+    MAXERR = 1
+    AREA = RES
+    ERRSUM = ABSERR
+    ABSERR = OFLOW
+    NRMAX = 1
+    NRES = 0
+    KTMIN = 0
+    NUMRL2 = 2
+    EXTRAP = .FALSE.
+    NOEXT = .FALSE.
+    IERRO = 0
+    IROFF1 = 0
+    IROFF2 = 0
+    IROFF3 = 0
+    KSGN = -1
+    IF (DRES.GE.(1.0D+00-5.0D+01*EPMACH)*DEFABS) KSGN = 1
+
+    !       MAIN DO-LOOP
+    !       ------------
+
+    DO LAST = 2, LIMIT
+
+       !       BISECT THE SUBINTERVAL WITH NRMAX-TH LARGEST ERROR ESTIMATE.
+
+       A1 = ALIST(MAXERR)
+       B1 = 5.0D-01*(ALIST(MAXERR)+BLIST(MAXERR))
+       A2 = B1
+       B2 = BLIST(MAXERR)
+       ERLAST = ERRMAX
+       CALL D01AMZ(F,BOUN,INF,A1,B1,AREA1,ERROR1,RESABS,DEFAB1)
+       CALL D01AMZ(F,BOUN,INF,A2,B2,AREA2,ERROR2,RESABS,DEFAB2)
+
+       !       IMPROVE PREVIOUS APPROXIMATIONS TO INTEGRAL AND ERROR
+       !       AND TEST FOR ACCURACY.
+
+       AREA12 = AREA1 + AREA2
+       ERRO12 = ERROR1 + ERROR2
+       ERRSUM = ERRSUM + ERRO12 - ERRMAX
+       AREA = AREA + AREA12 - RLIST(MAXERR)
+       IF (DEFAB1.EQ.ERROR1 .OR. DEFAB2.EQ.ERROR2) GO TO 40
+       IF (ABS(RLIST(MAXERR)-AREA12).GT.1.0D-05*ABS(AREA12)&
+            &.OR. ERRO12.LT.9.9D-01*ERRMAX) GO TO 20
+       IF (EXTRAP) IROFF2 = IROFF2 + 1
+       IF ( .NOT. EXTRAP) IROFF1 = IROFF1 + 1
+20     IF (LAST.GT.10 .AND. ERRO12.GT.ERRMAX) IROFF3 = IROFF3 + 1
+40     RLIST(MAXERR) = AREA1
+       RLIST(LAST) = AREA2
+       ERRBND = MAX(EPSABS,EPSREL*ABS(AREA))
+
+       !       APPEND THE NEWLY-CREATED INTERVALS TO THE LIST.
+
+       IF (ERROR2.GT.ERROR1) GO TO 60
+       ALIST(LAST) = A2
+       BLIST(MAXERR) = B1
+       BLIST(LAST) = B2
+       ELIST(MAXERR) = ERROR1
+       ELIST(LAST) = ERROR2
+       GO TO 80
+60     ALIST(MAXERR) = A2
+       ALIST(LAST) = A1
+       BLIST(LAST) = B1
+       RLIST(MAXERR) = AREA2
+       RLIST(LAST) = AREA1
+       ELIST(MAXERR) = ERROR2
+       ELIST(LAST) = ERROR1
+
+       !       CALL SUBROUTINE D01AJX TO MAINTAIN THE DESCENDING ORDERING
+       !       IN THE LIST OF ERROR ESTIMATES AND SELECT THE SUBINTERVAL
+       !       WITH NRMAX-TH LARGEST ERROR ESTIMATE (TO BE BISECTED NEXT).
+
+80     CALL D01AJX(LIMIT,LAST,MAXERR,ERRMAX,ELIST,IORD,NRMAX)
+       IF (ERRSUM.LE.ERRBND) GO TO 280
+
+       !       SET ERROR FLAG IN THE CASE THAT THE NUMBER OF SUBINTERVALS
+       !       EQUALS LIMIT.
+
+       IF (LAST.EQ.LIMIT) IER = 1
+
+       !       TEST FOR ROUNDOFF ERROR AND EVENTUALLY SET ERROR FLAG.
+
+       IF (IROFF1+IROFF2.GE.10 .OR. IROFF3.GE.20) IER = 2
+       IF (IROFF2.GE.5) IERRO = 3
+
+       !       SET ERROR FLAG IN THE CASE OF BAD INTEGRAND BEHAVIOUR
+       !       AT SOME POINTS OF THE INTEGRATION RANGE.
+
+       IF (MAX(ABS(A1),ABS(B2)).LE.(1.0D+00+1.0D+03*EPMACH)*(ABS(A2)&
+            &+1.0D+03*UFLOW)) IER = 4
+       IF (IER.GT.1) GO TO 220
+       IF (LAST.EQ.2) GO TO 180
+       IF (NOEXT) GO TO 200
+       ERLARG = ERLARG - ERLAST
+       IF (ABS(B1-A1).GT.SMALL) ERLARG = ERLARG + ERRO12
+       IF (EXTRAP) GO TO 100
+
+       !       TEST WHETHER THE INTERVAL TO BE BISECTED NEXT IS THE
+       !       SMALLEST INTERVAL.
+
+       IF (ABS(BLIST(MAXERR)-ALIST(MAXERR)).GT.SMALL) GO TO 200
+       EXTRAP = .TRUE.
+       NRMAX = 2
+100    IF (IERRO.EQ.3 .OR. ERLARG.LE.ERTEST) GO TO 140
+
+       !       THE SMALLEST INTERVAL HAS THE LARGEST ERROR.
+       !       BEFORE BISECTING DECREASE THE SUM OF THE ERRORS OVER THE
+       !       LARGER INTERVALS (ERLARG) AND PERFORM EXTRAPOLATION.
+
+       ID = NRMAX
+       JUPBND = LAST
+       IF (LAST.GT.(2+LIMIT/2)) JUPBND = LIMIT + 3 - LAST
+       DO K = ID, JUPBND
+          MAXERR = IORD(NRMAX)
+          ERRMAX = ELIST(MAXERR)
+          IF (ABS(BLIST(MAXERR)-ALIST(MAXERR)).GT.SMALL) GO TO 200
+          NRMAX = NRMAX + 1
+       ENDDO
+
+
+       !       PERFORM EXTRAPOLATION.
+
+140    NUMRL2 = NUMRL2 + 1
+       RLIST2(NUMRL2) = AREA
+       CALL D01AJY(NUMRL2,RLIST2,RESEPS,ABSEPS,RES3LA,NRES)
+       KTMIN = KTMIN + 1
+       IF (KTMIN.GT.5 .AND. ABSERR.LT.1.0D-03*ERRSUM) IER = 5
+       IF (ABSEPS.GE.ABSERR) GO TO 160
+       KTMIN = 0
+       ABSERR = ABSEPS
+       RES = RESEPS
+       CORREC = ERLARG
+       ERTEST = MAX(EPSABS,EPSREL*ABS(RESEPS))
+       IF (ABSERR.LE.ERTEST) THEN
+          IF (IER.EQ.1) IER = 0
+          GO TO 220
+       END IF
+
+       !        PREPARE BISECTION OF THE SMALLEST INTERVAL.
+
+160    IF (NUMRL2.EQ.1) NOEXT = .TRUE.
+       IF (IER.EQ.5 .OR. IER.EQ.1) GO TO 220
+       MAXERR = IORD(1)
+       ERRMAX = ELIST(MAXERR)
+       NRMAX = 1
+       EXTRAP = .FALSE.
+       SMALL = SMALL*5.0D-01
+       ERLARG = ERRSUM
+       GO TO 200
+180    SMALL = 3.75D-01
+       ERLARG = ERRSUM
+       ERTEST = ERRBND
+       RLIST2(2) = AREA
+200    CONTINUE
+    ENDDO
+    LAST = LIMIT
+
+    !       SET FINAL RES AND ERROR ESTIMATE.
+    !       ------------------------------------
+
+220 IF (ABSERR.EQ.OFLOW) GO TO 280
+    IF ((IER+IERRO).EQ.0) GO TO 260
+    IF (IERRO.EQ.3) ABSERR = ABSERR + CORREC
+    IF (IER.EQ.0) IER = 3
+    IF (RES.NE.0.0D+00 .AND. AREA.NE.0.0D+00) GO TO 240
+    IF (ABSERR.GT.ERRSUM) GO TO 280
+    IF (AREA.EQ.0.0D+00) GO TO 320
+    GO TO 260
+240 IF (ABSERR/ABS(RES).GT.ERRSUM/ABS(AREA)) GO TO 280
+
+    !       TEST ON DIVERGENCE
+
+260 IF (KSGN.EQ.(-1) .AND. MAX(ABS(RES),ABS(AREA))&
+         &.LE.DEFABS*1.0D-02) GO TO 320
+    IF (1.0D-02.GT.(RES/AREA) .OR. (RES/AREA)&
+         &.GT.1.0D+02 .OR. ERRSUM.GT.ABS(AREA)) IER = 6
+    GO TO 320
+
+    !       COMPUTE GLOBAL INTEGRAL SUM.
+
+280 RES = 0.0D+00
+    DO K = 1, LAST
+       RES = RES + RLIST(K)
+    ENDDO
+
+    ABSERR = ERRSUM
+320 NEVAL = 30*LAST - 15
+    IORD(1) = LAST
+    IF (INF.EQ.2) NEVAL = 2*NEVAL
+    IF (IER.GT.2) IER = IER - 1
+    IF (IER.EQ.3 .AND. IERS.NE.1) THEN
+       CALL X04AAF(0,NERR)
+       IF (INF.EQ.1) THEN
+          A1 = BOUND + (1.0D+00-A1)/A1
+          B2 = BOUND + (1.0D+00-B2)/B2
+          IF (A1.GE.0.0D+00) THEN
+             IF (B2.GE.0.0D+00) WRITE (REC,FMT=99999) B2, A1
+          ELSE
+             IF (B2.GE.0.0D+00) THEN
+                WRITE (REC,FMT=99999) A1, B2
+             ELSE
+                WRITE (REC,FMT=99999) B2, A1
+             END IF
+          END IF
+       ELSE IF (INF.EQ.-1) THEN
+          A1 = BOUND - (1.0D+00-A1)/A1
+          B2 = BOUND - (1.0D+00-B2)/B2
+          IF (A1.GE.0.0D+00) THEN
+             IF (B2.GE.0.0D+00) WRITE (REC,FMT=99999) A1, B2
+          ELSE
+             IF (B2.GE.0.0D+00) THEN
+                WRITE (REC,FMT=99999) B2, A1
+             ELSE
+                WRITE (REC,FMT=99999) A1, B2
+             END IF
+          END IF
+       ELSE
+          A1 = (1.0D+00-A1)/A1
+          B2 = (1.0D+00-B2)/B2
+          IF (A1.GE.0.0D+00) THEN
+             IF (B2.GE.0.0D+00) WRITE (REC,FMT=99998) B2, A1, -A1, -B2
+          ELSE
+             IF (B2.GE.0.0D+00) THEN
+                WRITE (REC,FMT=99998) A1, B2, -B2, -A1
+             ELSE
+                WRITE (REC,FMT=99998) B2, A1, -A1, -B2
+             END IF
+          END IF
+       END IF
+       CALL X04BAF(NERR,REC(1))
+       CALL X04BAF(NERR,REC(2))
+    END IF
+    RETURN
+
+99999 FORMAT (' ** Extremely bad integrand behaviour occurs around the',&
+         &' subinterval',/'    (',1P,D15.7,' , ',1P,D15.7,' )')
+99998 FORMAT (' ** Extremely bad integrand behaviour occurs around one',&
+         &' of the subintervals',/'    (',1P,D15.7,' , ',1P,D15.7,&
+         &' ) or (',1P,D15.7,' , ',1P,D15.7,' )')
+  END SUBROUTINE D01AMV
+
+
+  SUBROUTINE D01AMZ(F,BOUN,INF,A,B,RES,ABSERR,RESABS,RESASC)
+
+   ! USE declare
+!use nrtype
+    IMPLICIT NONE
+
+    ! BASED ON QUADPACK ROUTINE  QK15I.
+    !       PURPOSE
+    !          THE ORIGINAL (INFINITE) INTEGRATION RANGE IS MAPPED
+    !          ONTO THE INTERVAL (0,1) AND (A,B) IS A PART OF (0,1).
+    !          IT IS THE PURPOSE TO COMPUTE
+    !          I = INTEGRAL OF TRANSFORMED INTEGRAND OVER (A,B),
+    !          J = INTEGRAL OF ABS(TRANSFORMED INTEGRAND) OVER (A,B).
+    !       PARAMETERS
+    !        ON ENTRY
+    !          F      - REAL
+    !                   FUNCTION SUBPROGRAM DEFINING THE INTEGRAND
+    !                   FUNCTION F(X). THE ACTUAL NAME FOR F NEEDS TO BE
+    !                   DECLARED E X T E R N A L IN THE CALLING PROGRAM.
+    !          BOUN   - REAL
+    !                   FINITE BOUND OF ORIGINAL INTEGRATION RANGE
+    !                   (SET TO ZERO IF INF = +2)
+    !          INF    - INTEGER
+    !                   IF INF = -1, THE ORIGINAL INTERVAL IS
+    !                               (-INFINITY,BOUND),
+    !                   IF INF = +1, THE ORIGINAL INTERVAL IS
+    !                               (BOUND,+INFINITY),
+    !                   IF INF = +2, THE ORIGINAL INTERVAL IS
+    !                               (-INFINITY,+INFINITY) AND
+    !                   THE INTEGRAL IS COMPUTED AS THE SUM OF TWO
+    !                   INTEGRALS, ONE OVER (-INFINITY,0) AND ONE
+    !                   OVER (0,+INFINITY).
+    !          A      - REAL
+    !                   LOWER LIMIT FOR INTEGRATION OVER SUBRANGE
+    !                   OF (0,1)
+    !          B      - REAL
+    !                   UPPER LIMIT FOR INTEGRATION OVER SUBRANGE
+    !                   OF (0,1)
+    !        ON RETURN
+    !          RES - REAL
+    !                   APPROXIMATION TO THE INTEGRAL I
+    !                   RES IS COMPUTED BY APPLYING THE 15-POINT
+    !                   KRONROD RULE(RESK) OBTAINED BY OPTIMAL ADDITION
+    !                   OF ABSCISSAE TO THE 7-POINT GAUSS RULE (RESG).
+    !          ABSERR - REAL
+    !                   ESTIMATE OF THE MODULUS OF THE ABSOLUTE ERROR,
+    !                   WHICH SHOULD EQUAL OR EXCEED ABS(I-RES)
+    !          RESABS - REAL
+    !                   APPROXIMATION TO THE INTEGRAL J
+    !          RESASC - REAL
+    !                   APPROXIMATION TO THE INTEGRAL OF
+    !                   ABS((TRANSFORMED INTEGRAND)-I/(B-A)) OVER (A,B)
+    !       THE ABSCISSAE AND WEIGHTS ARE SUPPLIED FOR THE INTERVAL
+    !       (-1,1).  BECAUSE OF SYMMETRY ONLY THE POSITIVE ABSCISSAE AND
+    !       THEIR CORRESPONDING WEIGHTS ARE GIVEN.
+    !       XGK    - ABSCISSAE OF THE 15-POINT KRONROD RULE
+    !                XGK(2), XGK(4), ... ABSCISSAE OF THE 7-POINT GAUSS
+    !                RULE
+    !                XGK(1), XGK(3), ...  ABSCISSAE WHICH ARE OPTIMALLY
+    !                ADDED TO THE 7-POINT GAUSS RULE
+    !       WGK    - WEIGHTS OF THE 15-POINT KRONROD RULE
+    !       WG     - WEIGHTS OF THE 7-POINT GAUSS RULE, CORRESPONDING
+    !                TO THE ABSCISSAE XGK(2), XGK(4), ...
+    !                WG(1), WG(3), ... ARE SET TO ZERO.
+
+    ! .. Scalar Arguments ..
+    DOUBLE PRECISION :: A, ABSERR, B, BOUN, RESABS, RESASC, RES
+    INTEGER :: INF
+    ! .. Function Arguments ..
+    INTERFACE
+       FUNCTION F(x)
+        ! USE declare
+!use nrtype
+         DOUBLE PRECISION, INTENT(IN) :: x
+         DOUBLE PRECISION :: F
+       END FUNCTION F
+    END INTERFACE
+    ! .. Local Scalars ..
+    DOUBLE PRECISION :: ABSC, ABSC1, ABSC2, CENTR, DINF, EPMACH, FC,&
+         &FSUM, FVAL1, FVAL2, HLGTH, OFLOW, RESG, RESK,&
+         &RESKH, TABSC1, TABSC2, UFLOW
+    INTEGER :: J
+    ! .. Local Arrays ..
+    DOUBLE PRECISION, DIMENSION(7) :: FV1, FV2
+    DOUBLE PRECISION, DIMENSION(8) :: WG, WGK, XGK
+    ! .. Data statements ..
+    DATA  WG(1)/0.000000000000000000000000000000000D+00/,&
+         &WG(2)/0.129484966168869693270611432679082D+00/,&
+         &WG(3)/0.000000000000000000000000000000000D+00/,&
+         &WG(4)/0.279705391489276667901467771423780D+00/,&
+         &WG(5)/0.000000000000000000000000000000000D+00/,&
+         &WG(6)/0.381830050505118944950369775488975D+00/,&
+         &WG(7)/0.000000000000000000000000000000000D+00/,&
+         &WG(8)/0.417959183673469387755102040816327D+00/
+    DATA  XGK(1)/0.991455371120812639206854697526329D+00/,&
+         &XGK(2)/0.949107912342758524526189684047851D+00/,&
+         &XGK(3)/0.864864423359769072789712788640926D+00/,&
+         &XGK(4)/0.741531185599394439863864773280788D+00/,&
+         &XGK(5)/0.586087235467691130294144838258730D+00/,&
+         &XGK(6)/0.405845151377397166906606412076961D+00/,&
+         &XGK(7)/0.207784955007898467600689403773245D+00/,&
+         &XGK(8)/0.000000000000000000000000000000000D+00/
+    DATA  WGK(1)/0.022935322010529224963732008058970D+00/,&
+         &WGK(2)/0.063092092629978553290700663189204D+00/,&
+         &WGK(3)/0.104790010322250183839876322541518D+00/,&
+         &WGK(4)/0.140653259715525918745189590510238D+00/,&
+         &WGK(5)/0.169004726639267902826583426598550D+00/,&
+         &WGK(6)/0.190350578064785409913256402421014D+00/,&
+         &WGK(7)/0.204432940075298892414161999234649D+00/,&
+         &WGK(8)/0.209482141084727828012999174891714D+00/
+    ! .. Executable Statements ..
+
+    !       LIST OF MAJOR VARIABLES
+    !       -----------------------
+
+    !       CENTR  - MID POINT OF THE INTERVAL
+    !       HLGTH  - HALF-LENGTH OF THE INTERVAL
+    !       ABSC*  - ABSCISSA
+    !       TABSC* - TRANSFORMED ABSCISSA
+    !       FVAL*  - FUNCTION VALUE
+    !       RESG   - RES OF THE 7-POINT GAUSS FORMULA
+    !       RESK   - RES OF THE 15-POINT KRONROD FORMULA
+    !       RESKH  - APPROXIMATION TO THE MEAN VALUE OF THE TRANSFORMED
+    !                INTEGRAND OVER (A,B), I.E. TO I/(B-A)
+
+    EPMACH = X02AJF
+    UFLOW = X02AMF
+    OFLOW = 1.0D+00/UFLOW
+    DINF = MIN(1,INF)
+
+    CENTR = 5.0D-01*(A+B)
+    HLGTH = 5.0D-01*(B-A)
+    TABSC1 = BOUN + DINF*(1.0D+00-CENTR)/CENTR
+    FVAL1 = F(TABSC1)
+    IF (INF.EQ.2) FVAL1 = FVAL1 + F(-TABSC1)
+    FC = (FVAL1/CENTR)/CENTR
+
+    !       COMPUTE THE 15-POINT KRONROD APPROXIMATION TO THE INTEGRAL,
+    !       AND ESTIMATE THE ERROR.
+
+    RESG = WG(8)*FC
+    RESK = WGK(8)*FC
+    RESABS = ABS(RESK)
+    DO J = 1, 7
+       ABSC = HLGTH*XGK(J)
+       ABSC1 = CENTR - ABSC
+       ABSC2 = CENTR + ABSC
+       TABSC1 = BOUN + DINF*(1.0D+00-ABSC1)/ABSC1
+       TABSC2 = BOUN + DINF*(1.0D+00-ABSC2)/ABSC2
+       FVAL1 = F(TABSC1)
+       FVAL2 = F(TABSC2)
+       IF (INF.EQ.2) FVAL1 = FVAL1 + F(-TABSC1)
+       IF (INF.EQ.2) FVAL2 = FVAL2 + F(-TABSC2)
+       FVAL1 = (FVAL1/ABSC1)/ABSC1
+       FVAL2 = (FVAL2/ABSC2)/ABSC2
+       FV1(J) = FVAL1
+       FV2(J) = FVAL2
+       FSUM = FVAL1 + FVAL2
+       RESG = RESG + WG(J)*FSUM
+       RESK = RESK + WGK(J)*FSUM
+       RESABS = RESABS + WGK(J)*(ABS(FVAL1)+ABS(FVAL2))
+    ENDDO
+
+    RESKH = RESK*5.0D-01
+    RESASC = WGK(8)*ABS(FC-RESKH)
+    DO J = 1, 7
+       RESASC = RESASC + WGK(J)*(ABS(FV1(J)-RESKH)+ABS(FV2(J)-RESKH))
+    ENDDO
+
+    RES = RESK*HLGTH
+    RESASC = RESASC*HLGTH
+    RESABS = RESABS*HLGTH
+    ABSERR = ABS((RESK-RESG)*HLGTH)
+    IF (RESASC.NE.0.0D+00 .AND. ABSERR.NE.0.0D+00) &
+         &ABSERR = RESASC*MIN(1.0D+00,(2.0D+02*ABSERR/RESASC)**1.5D+00)
+    IF (RESABS.GT.UFLOW/(5.0D+01*EPMACH)) &
+         &ABSERR = MAX((EPMACH*5.0D+01)*RESABS,ABSERR)
+    RETURN
+  END SUBROUTINE D01AMZ
+
+
+  SUBROUTINE D01ARF(A,B,F,RELACC,ABSACC,MAXRUL,IPARM,ACC,ANS,N,&
+       &ALPHA,IFAIL)
+
+   ! USE declare
+!use nrtype
+    IMPLICIT NONE
+
+    ! DEFINITE AND INDEFINITE INTEGRATION OVER A FINITE INTERVAL
+
+    ! THE NUMERICAL INTEGRATION IS PERFORMED USING A SEQUENCE OF
+    ! RULES BASED ON THE REPEATED OPTIMAL EXTENSIONS OF THE 3-POINT
+    ! GAUSS RULE (SEE PATTERSON,T.N.L.,MATHS.COMP.,22,847-857,1968).
+    ! UP TO 9 RULES MAY BE APPLIED USING 1,3,7,15,31,63,127,255 AND
+    ! 511 POINTS OF RESPECTIVE POLYNOMIAL INTEGRATING DEGREE 1,5,11
+    ! 23,47,95,191,383 AND 767. EACH RULE HAS THE INTERLACING
+    ! PROPERTY THAT THE NEXT IN SEQUENCE INCLUDES ALL THE POINTS OF
+    ! ITS PREDECESSOR. IN CARRYING OUT THE INTEGRATION THE RESULTS
+    ! OF SUCCESSIVE RULES ARE COMPARED. WHEN THE LATEST TWO RESULTS
+    ! DIFFER ABSOLUTELY BY NOT MORE THAN A SPECIFIED TOLERANCE THE
+    ! RESULT OF THE LAST RULE USED IS TAKEN AS THE VALUE OF THE
+    ! INTEGRAL. THE PROCEDURE IS NON-ADAPTIVE IN THAT IF THE REQUIRED
+    ! TOLERANCE IS NOT ACHIEVED AFTER APPLYING ALL RULES NO ATTEMPT
+    ! IS MADE TO CONTINUE, THE BEST AVAILABLE RESULT IS RETURNED
+    ! WITH A WARNING.
+
+    ! THE CALL TO THE SUBROUTINE TAKES THE FORM-
+
+    !  CALL D01ARF(A,B,F,RELACC,ABSACC,MAXRUL,IPARM,
+    !              ACC,ANS,N,ALPHA,IFAIL)
+
+    ! THE ACTION PERFORMED IS CONTROLLED BY THE PARAMETER IPARM
+    ! AS FOLLOWS-
+
+    ! IPARM=0  -THE INTEGRAND F(X) IS INTEGRATED TO A PRESCRIBED
+    !           ACCURACY OVER THE FINITE INTERVAL A.LE.X.LE.B.
+    ! IPARM=1  -AS FOR IPARM=0 BUT ADDITIONALLY THE EXPANSION OF
+    !           INTEGRAND OVER THE INTERVAL (A,B) IN LEGENDRE
+    !           POLYNOMIALS IS CALCULATED USING THE SAME VALUES
+    !           OF THE INTEGRAND AS USED TO CALCULATE THE INTEGRAL.
+    !           THE EXPANSION COEFFICIENTS MAY BE USED LATER IN
+    !           COMPUTING INDEFINITE INTEGRALS.
+    ! IPARM=2  -INDEFINITE INTEGRATION -THE INTEGRAND F(X) IS
+    !           INTEGRATED ANALYTICALLY OVER THE INTERVAL
+    !           A.LE.X.LE.B USING THE LEGENDRE EXPANSION OF THE
+    !           INTEGRAND. NO FURTHER EVALUATIONS OF THE INTEGRAND
+    !           ARE REQUIRED. THE SUBROUTINE MUST PREVIOUSLY
+    !           HAVE BEEN CALLED WITH IPARM=1 AND THE INTERVAL
+    !           (A,B) MUST LIE WITHIN THE INTERVAL PRESCRIBED FOR
+    !           THAT PREVIOUS CALL.
+    !                -FORMAL ARGUMENT SPECIFICATIONS-
+
+    ! INPUT ARGUMENTS-
+    ! A,B        -RESPECTIVE LOWER AND UPPER LIMITS TO THE INTERVAL
+    !             OF INTEGRATION. REAL VARIABLES OR CONSTANTS.
+    ! F          -USER SUPPLIED AND DEFINED REAL FUNCTION F(X) TO
+    !             CALCULATE THE VALUE OF THE INTEGRAND AT X (REAL
+    !             VARIABLE). (IPARM=0 OR 1 ONLY).
+    ! RELACC,    -RESPECTIVE RELATIVE AND ABSOLUTE ACCURACIES
+    ! ABSACC      REQUIRED. THE REQUIRED ACCURACY IS ASSUMED TO HAVE
+    !             BEEN ACHIEVED WHEN THE RESULTS OF TWO SUCCESSIVE
+    !             RULES DIFFER ABSOLUTELY BY NOT MORE THAN
+    !                     AMAX1(ABS(ABSACC),ABS(RELACC*ANS))
+    !             WHERE ANS IS THE RESULT OBTAINED BY THE LAST RULE
+    !             USED. IF BOTH RELACC AND ABSACC ARE ZERO THEN
+    !             RELACC IS ASSUMED TO HAVE VALUE 10.0*EPMACH, WHERE
+    !             EPMACH IS THE SMALLEST POSITIVE REAL NUMBER SUCH
+    !             THAT
+    !                        1.0+EPMACH .GT. 1.0
+    !             TO MACHINE ACCURACY. IF ALL RULES ARE EXHAUSTED
+    !             WITHOUT ACHIEVING THE REQUIRED ACCURACY, ERROR
+    !             IFAIL=1 IS RAISED AND ANS IS SET TO THE VALUE
+    !             OBTAINED BY THE LAST RULE AS THE BEST
+    !             APPROXIMATION POSSIBLE. REAL VARIABLES OR
+    !             CONSTANTS.
+    !             (IPARM=0 OR 1 ONLY).
+    ! MAXRUL     -MAXIMUM NUMBER OF SUCCESSIVE RULES TO BE USED.
+    !             1.LE.MAXRUL.LE.9. IF OUTSIDE THESE LIMITS MAXRUL
+    !             DEFAULTS TO THE VALUE 9. INTEGER VARIABLE OR
+    !             CONSTANT. (IPARM=0 OR 1 ONLY).
+    ! IPARM      -THIS CONTROLS THE ACTION OF THE SUBROUTINE AND IS
+    !             SET TO ONE OF THE THREE POSSIBLE VALUES 0,1 OR 2.
+    !             IPARM=0  EVALUATES THE INTEGRAL ONLY.
+    !                  =1  EVALUATES THE INTEGRAL AND THE EXPANSION
+    !                      OF THE INTEGRAND IN LEGENDRE POLYNOMIALS.
+    !                  =2  CARRIES OUT INDEFINITE INTEGRATION.
+    !                      IN THIS CASE ONLY THE ARGUMENTS A,B,
+    !                      IPARM, ANS, ALPHA AND IFAIL ARE RELEVANT
+    !                      WITH THE OTHERS SUPPLIED SIMPLY AS DUMMY
+    !                      ARGUMENTS.
+    !                      INTEGER VARIABLE OR CONSTANT.
+    !             FULLER DETAILS ON IPARM HAVE BEEN GIVEN EARLIER.
+    ! ALPHA      -REAL ARRAY
+    !             THIS ARRAY SHOULD HAVE BEEN GENERATED BY A
+    !             PREVIOUS CALL WITH IPARM=1.  CONTENTS AS DESCRIBED
+    !             UNDER OUTPUT ARGUMENTS BELOW.
+    !             (IPARM=2 ONLY)
+    ! IFAIL      -NAG ERROR CONTROL. INTEGER VARIABLE.
+    !             IFAIL=0  HARD FAIL.
+    !                  =1  SOFT FAIL.
+
+    ! OUTPUT ARGUMENTS-
+    ! ACC        -ESTIMATED ABSOLUTE ERROR IN RESULT. THIS IS TAKEN
+    !             AS THE VALUE OF THE ABSOLUTE DIFFERENCE BETWEEN
+    !             THE RESULTS OF THE LAST TWO RULES USED.
+    !             REAL VARIABLE. (IPARM=0 OR 1 ONLY).
+    ! ANS        -APPROXIMATE VALUE OF THE INTEGRAL. REAL VARIABLE.
+    ! N          -NUMBER OF EVALUATIONS OF THE INTEGRAND USED.
+    !             INTEGER VARIABLE. (IPARM=0 OR 1 ONLY).
+    ! ALPHA      -REAL ARRAY
+    !             THIS ARRAY CONTAINS
+    !             ALPHA(1) TO ALPHA(NPTS) = THE NPTS COEFFICIENTS OF
+    !             THE APPROXIMATION TO F(X) OVER (A,B) GIVEN BY-
+    !             F(X) = SUM( I=1 TO NPTS ) ALPHA(I)*P(I-1,T)
+    !             WHERE X = (B+A+(B-A)*T)/2 AND P(I,T) IS THE
+    !             LEGENDRE POLYNOMIAL OF DEGREE I OVER (-1,1). THIS
+    !             APPROXIMATION IS INTEGRATED TO OBTAIN THE VALUE OF
+    !             THE INDEFINITE INTEGRAL.
+    !             NPTS=3*(N+1)/4 FOR N=1,3 OR 7
+    !             NPTS=3*N/4 OTHERWISE.
+    !             ALPHA ALSO HOLDS THE FOLLOWING INFORMATION
+    !             REQUIRED FOR CALLS FOR INDEFINITE INTEGRATION
+    !             ALPHA(390)=NPTS
+    !             ALPHA(389)=1 IF ALPHA USABLE FOR INDEF INTEGRATION
+    !                           (IE. IPARM=1 AND RANGE NON-TRIVIAL)
+    !                       =0 OTHERWISE
+    !             ALPHA(388)=IFAIL (IF ALPHA(389)=1)
+    !                        UNDEFINED OTHERWISE
+    !             ALPHA(387)=B
+    !             ALPHA(386)=A
+    !             ALPHA SHOULD BE DECLARED IN THE CALLING
+    !             PROGRAM TO HAVE AT LEAST 390 ELEMENTS.
+    !             (IPARM=1 ONLY)
+    !             ALPHA IS UNCHANGED WHEN IPARM=2
+    ! IFAIL      -REPORTS ERRORS AS FOLLOWS- (INTEGER VARIABLE)
+    !             IFAIL=0  NO ERRORS DETECTED.
+    !                  =1  ALL MAXRUL RULES HAVE BEEN APPLIED
+    !                      WITHOUT ACHIEVING THE REQUIRED ACCURACY.
+    !                      ANS IS SET TO THE VALUE OBTAINED BY THE
+    !                      LAST RULE USED.
+    !                  =2  IPARM FAILS TO SATISFY 0.LE.IPARM.LE.2.
+    !                  =3  SUBROUTINE HAS BEEN CALLED WITH IPARM=2
+    !                      BUT A PREVIOUS CALL WITH IPARM=1 HAS BEEN
+    !                      OMITTED OR WAS INVOKED WITH AN
+    !                      INTEGRATION INTERVAL OF LENGTH ZERO.
+    !                      (IPARM=2 ONLY).
+    !                  =4  THE INTERVAL FOR INDEFINITE INTEGRATION
+    !                      IS NOT CONTAINED WITHIN THE INTERVAL
+    !                      SPECIFIED WHEN THE SUBROUTINE WAS
+    !                      PREVIOUSLY CALLED WITH IPARM=1.
+    !                      (IPARM=2 ONLY).
+
+    ! .. Parameters ..
+    CHARACTER(6), PARAMETER :: SRNAME='D01ARF'
+    ! .. Scalar Arguments ..
+    DOUBLE PRECISION :: A, ABSACC, ACC, ANS, B, RELACC
+    INTEGER :: IFAIL, IPARM, MAXRUL, N
+    ! .. Array Arguments ..
+    DOUBLE PRECISION, DIMENSION(390) :: ALPHA
+    ! .. Function Arguments ..
+    INTERFACE
+       FUNCTION F(x)
+         !USE declare
+!use nrtype
+         DOUBLE PRECISION, INTENT(IN) :: x
+         DOUBLE PRECISION :: F
+       END FUNCTION F
+    END INTERFACE
+    ! .. Local Scalars ..
+    DOUBLE PRECISION :: AA, BB, BXA, BXA0, BXA1, BXB, BXB0, BXB1, C1,&
+         &C2, C3, DIFF, EPMACH, EPSABS, EPSREL, F1, F2,&
+         &FZERO, PP, Q, R1, R1PLUS, R2, SUM, T1, TEST, TT,&
+         &TTPLUS, X, XA, XB
+    INTEGER :: I, ICHECK, IERR, IP, IW, J, K, LP, MRULE, NB,&
+         &NPTS, NTOP, NTOPNB, NZ
+    ! .. Local Arrays ..
+    DOUBLE PRECISION, DIMENSION(256) :: FUNCTM, FUNCTP, P, P0, P1
+    DOUBLE PRECISION, DIMENSION(511) :: W
+    CHARACTER(1), DIMENSION(1) :: P01REC
+    ! .. Data statements ..
+    DATA  P(1), P(2), P(3), P(4), P(5), P(6), P(7), P(8),&
+         &P(9), P(10), P(11), P(12), P(13), P(14), P(15),&
+         &P(16), P(17), P(18), P(19), P(20), P(21), P(22),&
+         &P(23), P(24), P(25), P(26), P(27), P(28)&
+         &/0.999999672956734384381D00,   0.999997596379748464620D00,&
+         & 0.999992298136257588028D00,   0.999982430354891598580D00,&
+         & 0.999966730098486276883D00,   0.999943996207054375764D00,&
+         & 0.999913081144678282800D00,   0.999872888120357611938D00,&
+         & 0.999822363679787739196D00,   0.999760490924432047330D00,&
+         & 0.999686286448317731776D00,   0.999598799671910683252D00,&
+         & 0.999497112467187190535D00,   0.999380338025023581928D00,&
+         & 0.999247618943342473599D00,   0.999098124967667597662D00,&
+         & 0.998931050830810562236D00,   0.998745614468095114704D00,&
+         & 0.998541055697167906027D00,   0.998316635318407392531D00,&
+         & 0.998071634524930323302D00,   0.997805354495957274562D00,&
+         & 0.997517116063472399965D00,   0.997206259372221959076D00,&
+         & 0.996872143485260161299D00,   0.996514145914890273849D00,&
+         & 0.996131662079315037786D00,   0.995724104698407188509D00/
+    DATA  P(29), P(30), P(31), P(32), P(33), P(34), P(35),&
+         &P(36), P(37), P(38), P(39), P(40), P(41), P(42),&
+         &P(43), P(44), P(45), P(46), P(47), P(48), P(49),&
+         &P(50), P(51), P(52), P(53), P(54), P(55), P(56)&
+         &/0.995290903148810302261D00,   0.994831502800621000519D00,&
+         & 0.994345364356723405931D00,   0.993831963212755022209D00,&
+         & 0.993290788851684966211D00,   0.992721344282788615328D00,&
+         & 0.992123145530863117683D00,   0.991495721178106132399D00,&
+         & 0.990838611958294243677D00,   0.990151370400770159181D00,&
+         & 0.989433560520240838716D00,   0.988684757547429479939D00,&
+         & 0.987904547695124280467D00,   0.987092527954034067190D00,&
+         & 0.986248305913007552681D00,   0.985371499598520371114D00,&
+         & 0.984461737328814534596D00,   0.983518657578632728762D00,&
+         & 0.982541908851080604251D00,   0.981531149553740106867D00,&
+         & 0.980486047876721339416D00,   0.979406281670862683806D00,&
+         & 0.978291538324758539526D00,   0.977141514639705714156D00,&
+         & 0.975955916702011753129D00,   0.974734459752402667761D00,&
+         & 0.973476868052506926773D00,   0.972182874748581796578D00/
+    DATA  P(57), P(58), P(59), P(60), P(61), P(62), P(63),&
+         &P(64), P(65), P(66), P(67), P(68), P(69), P(70),&
+         &P(71), P(72), P(73), P(74), P(75), P(76), P(77),&
+         &P(78), P(79), P(80), P(81), P(82), P(83), P(84)&
+         &/0.970852221732792443256D00,   0.969484659502459231771D00,&
+         & 0.968079947017759947964D00,   0.966637851558416567092D00,&
+         & 0.965158148579915665979D00,   0.963640621569812132521D00,&
+         & 0.962085061904651475741D00,   0.960491268708020283423D00,&
+         & 0.958859048710200221356D00,   0.957188216109860962736D00,&
+         & 0.955478592438183697574D00,   0.953730006425761136415D00,&
+         & 0.951942293872573589498D00,   0.950115297521294876558D00,&
+         & 0.948248866934137357063D00,   0.946342858373402905148D00,&
+         & 0.944397134685866648591D00,   0.942411565191083059813D00,&
+         & 0.940386025573669721370D00,   0.938320397779592883655D00,&
+         & 0.936214569916450806625D00,   0.934068436157725787999D00,&
+         & 0.931881896650953639345D00,   0.929654857429740056670D00,&
+         & 0.927387230329536696843D00,   0.925078932907075652364D00,&
+         & 0.922729888363349241523D00,   0.920340025470012420730D00/
+    DATA  P(85), P(86), P(87), P(88), P(89), P(90), P(91),&
+         &P(92), P(93), P(94), P(95), P(96), P(97), P(98),&
+         &P(99), P(100), P(101), P(102), P(103), P(104),&
+         &P(105), P(106), P(107), P(108), P(109), P(110), P(111), P(112)&
+         &/0.917909278499077501636D00,   0.915437587155765040644D00,&
+         & 0.912924896514370590080D00,   0.910371156957004292498D00,&
+         & 0.907776324115058903624D00,   0.905140358813261595189D00,&
+         & 0.902463227016165675048D00,   0.899744899776940036639D00,&
+         & 0.896985353188316590376D00,   0.894184568335559022859D00,&
+         & 0.891342531251319871666D00,   0.888459232872256998890D00,&
+         & 0.885534668997285008926D00,   0.882568840247341906842D00,&
+         & 0.879561752026556262568D00,   0.876513414484705269742D00,&
+         & 0.873423842480859310192D00,   0.870293055548113905851D00,&
+         & 0.867121077859315215614D00,   0.863907938193690477146D00,&
+         & 0.860653669904299969802D00,   0.857358310886232156525D00,&
+         & 0.854021903545468625813D00,   0.850644494768350279758D00,&
+         & 0.847226135891580884381D00,   0.843766882672708601038D00,&
+         & 0.840266795261030442350D00,   0.836725938168868735503D00/
+    DATA  P(113), P(114), P(115), P(116), P(117), P(118),&
+         &P(119), P(120), P(121), P(122), P(123), P(124),&
+         &P(125), P(126), P(127), P(128), P(129), P(130),&
+         &P(131), P(132), P(133), P(134), P(135), P(136),&
+         &P(137), P(138), P(139), P(140)&
+         &/0.833144380243172624728D00,   0.829522194637401400178D00,&
+         & 0.825859458783650001088D00,   0.822156254364980407373D00,&
+         & 0.818412667287925807395D00,   0.814628787655137413436D00,&
+         & 0.810804709738146594361D00,   0.806940531950217611856D00,&
+         & 0.803036356819268687782D00,   0.799092290960841401800D00,&
+         & 0.795108445051100526780D00,   0.791084933799848361435D00,&
+         & 0.787021875923539422170D00,   0.782919394118283016385D00,&
+         & 0.778777615032822744702D00,   0.774596669241483377036D00,&
+         & 0.770376691217076824278D00,   0.766117819303760090717D00,&
+         & 0.761820195689839149173D00,   0.757483966380513637926D00,&
+         & 0.753109281170558142523D00,   0.748696293616936602823D00,&
+         & 0.744245161011347082309D00,   0.739756044352694758677D00,&
+         & 0.735229108319491547663D00,   0.730664521242181261329D00,&
+         & 0.726062455075389632685D00,   0.721423085370098915485D00/
+    DATA  P(141), P(142), P(143), P(144), P(145), P(146),&
+         &P(147), P(148), P(149), P(150), P(151), P(152),&
+         &P(153), P(154), P(155), P(156), P(157), P(158),&
+         &P(159), P(160), P(161), P(162), P(163), P(164),&
+         &P(165), P(166), P(167), P(168)&
+         &/0.716746591245747095767D00,   0.712033155362252034587D00,&
+         & 0.707282963891961103412D00,   0.702496206491527078610D00,&
+         & 0.697673076273711232906D00,   0.692813769779114702895D00,&
+         & 0.687918486947839325756D00,   0.682987431091079228087D00,&
+         & 0.678020808862644517838D00,   0.673018830230418479199D00,&
+         & 0.667981708447749702165D00,   0.662909660024780595461D00,&
+         & 0.657802904699713735422D00,   0.652661665410017496101D00,&
+         & 0.647486168263572388782D00,   0.642276642509759513774D00,&
+         & 0.637033320510492495071D00,   0.631756437711194230414D00,&
+         & 0.626446232611719746542D00,   0.621102946737226402941D00,&
+         & 0.615726824608992638014D00,   0.610318113715186400156D00,&
+         & 0.604877064481584353319D00,   0.599403930242242892974D00,&
+         & 0.593898967210121954393D00,   0.588362434447662541434D00,&
+         & 0.582794593837318850840D00,   0.577195710052045814844D00/
+    DATA  P(169), P(170), P(171), P(172), P(173), P(174),&
+         &P(175), P(176), P(177), P(178), P(179), P(180),&
+         &P(181), P(182), P(183), P(184), P(185), P(186),&
+         &P(187), P(188), P(189), P(190), P(191), P(192),&
+         &P(193), P(194), P(195), P(196)&
+         &/0.571566050525742833992D00,   0.565905885423654422623D00,&
+         & 0.560215487612728441818D00,   0.554495132631932548866D00,&
+         & 0.548745098662529448608D00,   0.542965666498311490492D00,&
+         & 0.537157119515795115982D00,   0.531319743644375623972D00,&
+         & 0.525453827336442687395D00,   0.519559661537457021993D00,&
+         & 0.513637539655988578507D00,   0.507687757533716602155D00,&
+         & 0.501710613415391878251D00,   0.495706407918761460170D00,&
+         & 0.489675444004456155436D00,   0.483618026945841027562D00,&
+         & 0.477534464298829155284D00,   0.471425065871658876934D00,&
+         & 0.465290143694634735858D00,   0.459130011989832332874D00,&
+         & 0.452944987140767283784D00,   0.446735387662028473742D00,&
+         & 0.440501534168875795783D00,   0.434243749346802558002D00,&
+         & 0.427962357921062742583D00,   0.421657686626163300056D00,&
+         & 0.415330064175321663764D00,   0.408979821229888672409D00/
+    DATA  P(197), P(198), P(199), P(200), P(201), P(202),&
+         &P(203), P(204), P(205), P(206), P(207), P(208),&
+         &P(209), P(210), P(211), P(212), P(213), P(214),&
+         &P(215), P(216), P(217), P(218), P(219), P(220),&
+         &P(221), P(222), P(223), P(224)&
+         &/0.402607290368737092671D00,   0.396212806057615939183D00,&
+         & 0.389796704618470795479D00,   0.383359324198730346916D00,&
+         & 0.376901004740559344802D00,   0.370422087950078230138D00,&
+         & 0.363922917266549655269D00,   0.357403837831532152376D00,&
+         & 0.350865196458001209011D00,   0.344307341599438022777D00,&
+         & 0.337730623318886219621D00,   0.331135393257976833093D00,&
+         & 0.324522004605921855207D00,   0.317890812068476683182D00,&
+         & 0.311242171836871800300D00,   0.304576441556714043335D00,&
+         & 0.297893980296857823437D00,   0.291195148518246681964D00,&
+         & 0.284480308042725577496D00,   0.277749822021824315065D00,&
+         & 0.271004054905512543536D00,   0.264243372410926761945D00,&
+         & 0.257468141491069790481D00,   0.250678730303483176613D00,&
+         & 0.243875508178893021593D00,   0.237058845589829727213D00,&
+         & 0.230229114119222177156D00,   0.223386686428966881628D00/
+    DATA  P(225), P(226), P(227), P(228), P(229), P(230),&
+         &P(231), P(232), P(233), P(234), P(235), P(236),&
+         &P(237), P(238), P(239), P(240), P(241), P(242),&
+         &P(243), P(244), P(245), P(246), P(247), P(248),&
+         &P(249), P(250), P(251), P(252)&
+         &/0.216531936228472628081D00,   0.209665238243181194766D00,&
+         & 0.202786968183064697557D00,   0.195897502711100153915D00,&
+         & 0.188997219411721861059D00,   0.182086496759252198246D00,&
+         & 0.175165714086311475707D00,   0.168235251552207464982D00,&
+         & 0.161295490111305257361D00,   0.154346811481378108692D00,&
+         & 0.147389598111939940054D00,   0.140424233152560174594D00,&
+         & 0.133451100421161601344D00,   0.126470584372301966851D00,&
+         & 0.119483070065440005133D00,   0.112488943133186625746D00,&
+         & 0.105488589749541988533D00,   0.984823965981192020903D-01,&
+         & 0.914707508403553909095D-01,   0.844540400837108837102D-01,&
+         & 0.774326523498572825675D-01,   0.704069760428551790633D-01,&
+         & 0.633773999173222898797D-01,   0.563443130465927899720D-01,&
+         & 0.493081047908686267156D-01,   0.422691647653636032124D-01,&
+         & 0.352278828084410232603D-01,   0.281846489497456943394D-01/
+    DATA  P(253), P(254), P(255), P(256)&
+         &/0.211398533783310883350D-01,   0.140938864107824626142D-01,&
+         & 0.704713845933674648514D-02,   0.000000000000000000000D00/
+    DATA  W(1)/2.000000000000000000000D00/
+    DATA  W(2), W(3), W(4), W(5), W(6), W(7), W(8), W(9),&
+         &W(10), W(11), W(12), W(13), W(14), W(15), W(16),&
+         &W(17), W(18), W(19), W(20), W(21), W(22), W(23),&
+         &W(24), W(25), W(26), W(27), W(28), W(29)&
+         &/0.555555555555555555556D00,   0.888888888888888888889D00,&
+         & 0.104656226026467265194D00,   0.268488089868333440729D00,&
+         & 0.401397414775962222905D00,   0.450916538658474142345D00,&
+         & 0.170017196299402603390D-01,   0.516032829970797396969D-01,&
+         & 0.929271953151245376859D-01,   0.134415255243784220360D00,&
+         & 0.171511909136391380787D00,   0.200628529376989021034D00,&
+         & 0.219156858401587496404D00,   0.225510499798206687386D00,&
+         & 0.254478079156187441540D-02,   0.843456573932110624631D-02,&
+         & 0.164460498543878109338D-01,   0.258075980961766535646D-01,&
+         & 0.359571033071293220968D-01,   0.464628932617579865414D-01,&
+         & 0.569795094941233574122D-01,   0.672077542959907035404D-01,&
+         & 0.768796204990035310427D-01,   0.857559200499903511542D-01,&
+         & 0.936271099812644736167D-01,   0.100314278611795578771D00,&
+         & 0.105669893580234809744D00,   0.109578421055924638237D00/
+    DATA  W(30), W(31), W(32), W(33), W(34), W(35), W(36),&
+         &W(37), W(38), W(39), W(40), W(41), W(42), W(43),&
+         &W(44), W(45), W(46), W(47), W(48), W(49), W(50),&
+         &W(51), W(52), W(53), W(54), W(55), W(56), W(57)&
+         &/0.111956873020953456880D00,   0.112755256720768691607D00,&
+         & 0.363221481845530659694D-03,   0.126515655623006801137D-02,&
+         & 0.257904979468568827243D-02,   0.421763044155885483908D-02,&
+         & 0.611550682211724633968D-02,   0.822300795723592966926D-02,&
+         & 0.104982469096213218983D-01,   0.129038001003512656260D-01,&
+         & 0.154067504665594978021D-01,   0.179785515681282703329D-01,&
+         & 0.205942339159127111492D-01,   0.232314466399102694433D-01,&
+         & 0.258696793272147469108D-01,   0.284897547458335486125D-01,&
+         & 0.310735511116879648799D-01,   0.336038771482077305417D-01,&
+         & 0.360644327807825726401D-01,   0.384398102494555320386D-01,&
+         & 0.407155101169443189339D-01,   0.428779600250077344929D-01,&
+         & 0.449145316536321974143D-01,   0.468135549906280124026D-01,&
+         & 0.485643304066731987159D-01,   0.501571393058995374137D-01,&
+         & 0.515832539520484587768D-01,   0.528349467901165198621D-01/
+    DATA  W(58), W(59), W(60), W(61), W(62), W(63), W(64),&
+         &W(65), W(66), W(67), W(68), W(69), W(70), W(71),&
+         &W(72), W(73), W(74), W(75), W(76), W(77), W(78),&
+         &W(79), W(80), W(81), W(82), W(83), W(84), W(85)&
+         &/0.539054993352660639269D-01,   0.547892105279628650322D-01,&
+         & 0.554814043565593639878D-01,   0.559784365104763194076D-01,&
+         & 0.562776998312543012726D-01,   0.563776283603847173877D-01,&
+         & 0.505360952078625176247D-04,   0.180739564445388357820D-03,&
+         & 0.377746646326984660274D-03,   0.632607319362633544219D-03,&
+         & 0.938369848542381500794D-03,   0.128952408261041739210D-02,&
+         & 0.168114286542146990631D-02,   0.210881524572663287933D-02,&
+         & 0.256876494379402037313D-02,   0.305775341017553113613D-02,&
+         & 0.357289278351729964938D-02,   0.411150397865469304717D-02,&
+         & 0.467105037211432174741D-02,   0.524912345480885912513D-02,&
+         & 0.584344987583563950756D-02,   0.645190005017573692281D-02,&
+         & 0.707248999543355546805D-02,   0.770337523327974184817D-02,&
+         & 0.834283875396815770558D-02,   0.898927578406413572328D-02,&
+         & 0.964117772970253669530D-02,   0.102971169579563555237D-01/
+    DATA  W(86), W(87), W(88), W(89), W(90), W(91), W(92),&
+         &W(93), W(94), W(95), W(96), W(97), W(98), W(99),&
+         &W(100), W(101), W(102), W(103), W(104), W(105),&
+         &W(106), W(107), W(108), W(109), W(110), W(111), W(112), W(113)&
+         &/0.109557333878379016480D-01,   0.116157233199551347270D-01,&
+         & 0.122758305600827700870D-01,   0.129348396636073734547D-01,&
+         & 0.135915710097655467896D-01,   0.142448773729167743063D-01,&
+         & 0.148936416648151820348D-01,   0.155367755558439824399D-01,&
+         & 0.161732187295777199419D-01,   0.168019385741038652709D-01,&
+         & 0.174219301594641737472D-01,   0.180322163903912863201D-01,&
+         & 0.186318482561387901863D-01,   0.192199051247277660193D-01,&
+         & 0.197954950480974994880D-01,   0.203577550584721594669D-01,&
+         & 0.209058514458120238522D-01,   0.214389800125038672465D-01,&
+         & 0.219563663053178249393D-01,   0.224572658268160987071D-01,&
+         & 0.229409642293877487608D-01,   0.234067774953140062013D-01,&
+         & 0.238540521060385400804D-01,   0.242821652033365993580D-01,&
+         & 0.246905247444876769091D-01,   0.250785696529497687068D-01,&
+         & 0.254457699654647658126D-01,   0.257916269760242293884D-01/
+    DATA  W(114), W(115), W(116), W(117), W(118), W(119),&
+         &W(120), W(121), W(122), W(123), W(124), W(125),&
+         &W(126), W(127), W(128), W(129), W(130), W(131),&
+         &W(132), W(133), W(134), W(135), W(136), W(137),&
+         &W(138), W(139), W(140), W(141)&
+         &/0.261156733767060976805D-01,   0.264174733950582599310D-01,&
+         & 0.266966229274503599062D-01,   0.269527496676330319634D-01,&
+         & 0.271855132296247918192D-01,   0.273946052639814325161D-01,&
+         & 0.275797495664818730349D-01,   0.277407021782796819939D-01,&
+         & 0.278772514766137016085D-01,   0.279892182552381597038D-01,&
+         & 0.280764557938172466068D-01,   0.281388499156271506363D-01,&
+         & 0.281763190330166021307D-01,   0.281888141801923586938D-01,&
+         & 0.693793643241082671695D-05,   0.251578703842806614886D-04,&
+         & 0.532752936697806131254D-04,   0.903727346587511492612D-04,&
+         & 0.135754910949228719730D-03,   0.188873264506504913661D-03,&
+         & 0.249212400482997294025D-03,   0.316303660822264476886D-03,&
+         & 0.389745284473282293216D-03,   0.469184924247850409755D-03,&
+         & 0.554295314930374714918D-03,   0.644762041305724779327D-03,&
+         & 0.740282804244503330463D-03,   0.840571432710722463647D-03/
+    DATA  W(142), W(143), W(144), W(145), W(146), W(147),&
+         &W(148), W(149), W(150), W(151), W(152), W(153),&
+         &W(154), W(155), W(156), W(157), W(158), W(159),&
+         &W(160), W(161), W(162), W(163), W(164), W(165),&
+         &W(166), W(167), W(168), W(169)&
+         &/0.945361516858525382463D-03,   0.105440762286331677225D-02,&
+         & 0.116748411742995940769D-02,   0.128438247189701017681D-02,&
+         & 0.140490799565514464272D-02,   0.152887670508776556838D-02,&
+         & 0.165611272815445260522D-02,   0.178644639175864982468D-02,&
+         & 0.191971297101387241252D-02,   0.205575198932734652359D-02,&
+         & 0.219440692536383883880D-02,   0.233552518605716087370D-02,&
+         & 0.247895822665756793068D-02,   0.262456172740442956257D-02,&
+         & 0.277219576459345099400D-02,   0.292172493791781975378D-02,&
+         & 0.307301843470257832341D-02,   0.322595002508786846140D-02,&
+         & 0.338039799108692038235D-02,   0.353624499771677773402D-02,&
+         & 0.369337791702565081826D-02,   0.385168761663987092408D-02,&
+         & 0.401106872407502339889D-02,   0.417141937698407885279D-02,&
+         & 0.433264096809298285454D-02,   0.449463789203206786164D-02,&
+         & 0.465731729975685477728D-02,   0.482058886485126834765D-02/
+    DATA  W(170), W(171), W(172), W(173), W(174), W(175),&
+         &W(176), W(177), W(178), W(179), W(180), W(181),&
+         &W(182), W(183), W(184), W(185), W(186), W(187),&
+         &W(188), W(189), W(190), W(191), W(192), W(193),&
+         &W(194), W(195), W(196), W(197)&
+         &/0.498436456476553860120D-02,   0.514855847897817776184D-02,&
+         & 0.531308660518705656629D-02,   0.547786669391895082402D-02,&
+         & 0.564281810138444415845D-02,   0.580786165997756736349D-02,&
+         & 0.597291956550816580495D-02,   0.613791528004138504348D-02,&
+         & 0.630277344908575871716D-02,   0.646741983180368672737D-02,&
+         & 0.663178124290188789412D-02,   0.679578550488277339479D-02,&
+         & 0.695936140939042293944D-02,   0.712243868645838715317D-02,&
+         & 0.728494798055380706388D-02,   0.744682083240759101741D-02,&
+         & 0.760798966571905658322D-02,   0.776838777792199121996D-02,&
+         & 0.792794933429484911025D-02,   0.808660936478885997097D-02,&
+         & 0.824430376303286803055D-02,   0.840096928705193263543D-02,&
+         & 0.855654356130768961917D-02,   0.871096507973208687358D-02,&
+         & 0.886417320948249426411D-02,   0.901610819519564316003D-02,&
+         & 0.916671116356078840671D-02,   0.931592412806939509316D-02/
+    DATA  W(198), W(199), W(200), W(201), W(202), W(203),&
+         &W(204), W(205), W(206), W(207), W(208), W(209),&
+         &W(210), W(211), W(212), W(213), W(214), W(215),&
+         &W(216), W(217), W(218), W(219), W(220), W(221),&
+         &W(222), W(223), W(224), W(225)&
+         &/0.946368999383006529427D-02,   0.960995256236388300966D-02,&
+         & 0.975465653631741146108D-02,   0.989774752404874974401D-02,&
+         & 0.100391720440568407982D-01,   0.101788775292360797335D-01,&
+         & 0.103168123309476216819D-01,   0.104529257229060119261D-01,&
+         & 0.105871679048851979309D-01,   0.107194900062519336232D-01,&
+         & 0.108498440893373140990D-01,   0.109781831526589124696D-01,&
+         & 0.111044611340069265370D-01,   0.112286329134080493536D-01,&
+         & 0.113506543159805966017D-01,   0.114704821146938743804D-01,&
+         & 0.115880740330439525684D-01,   0.117033887476570031007D-01,&
+         & 0.118163858908302357632D-01,   0.119270260530192700402D-01,&
+         & 0.120352707852795626304D-01,   0.121410826016682996790D-01,&
+         & 0.122444249816119858986D-01,   0.123452623722438384545D-01,&
+         & 0.124435601907140352631D-01,   0.125392848264748843534D-01,&
+         & 0.126324036435420787645D-01,   0.127228849827323829063D-01/
+    DATA  W(226), W(227), W(228), W(229), W(230), W(231),&
+         &W(232), W(233), W(234), W(235), W(236), W(237),&
+         &W(238), W(239), W(240), W(241), W(242), W(243),&
+         &W(244), W(245), W(246), W(247), W(248), W(249),&
+         &W(250), W(251), W(252), W(253)&
+         &/0.128106981638773619668D-01,   0.128958134880121146942D-01,&
+         & 0.129782022395373992858D-01,   0.130578366883530488402D-01,&
+         & 0.131346900919601528364D-01,   0.132087366975291299655D-01,&
+         & 0.132799517439305306504D-01,   0.133483114637251799531D-01,&
+         & 0.134137930851100985130D-01,   0.134763748338165159817D-01,&
+         & 0.135360359349562136137D-01,   0.135927566148123959096D-01,&
+         & 0.136465181025712914284D-01,   0.136973026319907162581D-01,&
+         & 0.137450934430018966323D-01,   0.137898747832409365174D-01,&
+         & 0.138316319095064286765D-01,   0.138703510891398409970D-01,&
+         & 0.139060196013254612635D-01,   0.139386257383068508043D-01,&
+         & 0.139681588065169385157D-01,   0.139946091276190798519D-01,&
+         & 0.140179680394566088099D-01,   0.140382278969086233034D-01,&
+         & 0.140553820726499642772D-01,   0.140694249578135753181D-01,&
+         & 0.140803519625536613248D-01,   0.140881595165083010653D-01/
+    DATA  W(254), W(255), W(256), W(257), W(258), W(259),&
+         &W(260), W(261), W(262), W(263), W(264), W(265),&
+         &W(266), W(267), W(268), W(269), W(270), W(271),&
+         &W(272), W(273), W(274), W(275), W(276), W(277),&
+         &W(278), W(279), W(280), W(281)&
+         &/0.140928450691604083550D-01,   0.140944070900961793469D-01,&
+         & 0.945715933950007048827D-06,   0.345456507169149134898D-05,&
+         & 0.736624069102321668857D-05,   0.125792781889592743525D-04,&
+         & 0.190213681905875816679D-04,   0.266376412339000901358D-04,&
+         & 0.353751372055189588628D-04,   0.451863674126296143105D-04,&
+         & 0.560319507856164252140D-04,   0.678774554733972416227D-04,&
+         & 0.806899228014035293851D-04,   0.944366322532705527066D-04,&
+         & 0.109085545645741522051D-03,   0.124606200241498368482D-03,&
+         & 0.140970302204104791413D-03,   0.158151830411132242924D-03,&
+         & 0.176126765545083195474D-03,   0.194872642236641146532D-03,&
+         & 0.214368090034216937149D-03,   0.234592462123925204879D-03,&
+         & 0.255525589595236862014D-03,   0.277147657465187357459D-03,&
+         & 0.299439176850911730874D-03,   0.322381020652862389664D-03,&
+         & 0.345954492129903871350D-03,   0.370141402122251665232D-03/
+    DATA  W(282), W(283), W(284), W(285), W(286), W(287),&
+         &W(288), W(289), W(290), W(291), W(292), W(293),&
+         &W(294), W(295), W(296), W(297), W(298), W(299),&
+         &W(300), W(301), W(302), W(303), W(304), W(305),&
+         &W(306), W(307), W(308), W(309)&
+         &/0.394924138246873704434D-03,   0.420285716355361231823D-03,&
+         & 0.446209810101403247488D-03,   0.472680758429262691232D-03,&
+         & 0.499683553312800484519D-03,   0.527203811431658386125D-03,&
+         & 0.555227733977307579715D-03,   0.583742058714979703847D-03,&
+         & 0.612734008012225209294D-03,   0.642191235948505088403D-03,&
+         & 0.672101776960108194646D-03,   0.702453997827572321358D-03,&
+         & 0.733236554224767912055D-03,   0.764438352543882784191D-03,&
+         & 0.796048517297550871506D-03,   0.828056364077226302608D-03,&
+         & 0.860451377808527848128D-03,   0.893223195879324912340D-03,&
+         & 0.926361595613111283368D-03,   0.959856485506936206261D-03,&
+         & 0.993697899638760857945D-03,   0.102787599466367326179D-02,&
+         & 0.106238104885340071375D-02,   0.109720346268191941940D-02,&
+         & 0.113233376051597664917D-02,   0.116776259302858043685D-02,&
+         & 0.120348074001265964881D-02,   0.123947911332878396534D-02/
+    DATA  W(310), W(311), W(312), W(313), W(314), W(315),&
+         &W(316), W(317), W(318), W(319), W(320), W(321),&
+         &W(322), W(323), W(324), W(325), W(326), W(327),&
+         &W(328), W(329), W(330), W(331), W(332), W(333),&
+         &W(334), W(335), W(336), W(337)&
+         &/0.127574875977346947345D-02,   0.131228086370221478128D-02,&
+         & 0.134906674928353113127D-02,   0.138609788229672549700D-02,&
+         & 0.142336587141720519900D-02,   0.146086246895890987689D-02,&
+         & 0.149857957106456636214D-02,   0.153650921735128916170D-02,&
+         & 0.157464359003212166189D-02,   0.161297501254393423070D-02,&
+         & 0.165149594771914570655D-02,   0.169019899554346019117D-02,&
+         & 0.172907689054461607168D-02,   0.176812249885838886701D-02,&
+         & 0.180732881501808930079D-02,   0.184668895851282540913D-02,&
+         & 0.188619617015808475394D-02,   0.192584380831993546204D-02,&
+         & 0.196562534503150547732D-02,   0.200553436203751169944D-02,&
+         & 0.204556454679958293446D-02,   0.208570968849203942640D-02,&
+         & 0.212596367401472533045D-02,   0.216632048404649142727D-02,&
+         & 0.220677418916003329194D-02,   0.224731894601603393082D-02,&
+         & 0.228794899365195972378D-02,   0.232865864987842738864D-02/
+    DATA  W(338), W(339), W(340), W(341), W(342), W(343),&
+         &W(344), W(345), W(346), W(347), W(348), W(349),&
+         &W(350), W(351), W(352), W(353), W(354), W(355),&
+         &W(356), W(357), W(358), W(359), W(360), W(361),&
+         &W(362), W(363), W(364), W(365)&
+         &/0.236944230779380495146D-02,   0.241029443242563417382D-02,&
+         & 0.245120955750556483923D-02,   0.249218228238276930060D-02,&
+         & 0.253320726907925325750D-02,   0.257427923948908888092D-02,&
+         & 0.261539297272236109225D-02,   0.265654330259352828314D-02,&
+         & 0.269772511525294586667D-02,   0.273893334695947541201D-02,&
+         & 0.278016298199139435045D-02,   0.282140905069222207923D-02,&
+         & 0.286266662764757868253D-02,   0.290393082998878368175D-02,&
+         & 0.294519681581857582284D-02,   0.298645978275408290247D-02,&
+         & 0.302771496658198544480D-02,   0.306895764002069252174D-02,&
+         & 0.311018311158427546158D-02,   0.315138672454287935858D-02,&
+         & 0.319256385597434736790D-02,   0.323370991590184336368D-02,&
+         & 0.327482034651233969564D-02,   0.331589062145094394706D-02,&
+         & 0.335691624518616761342D-02,   0.339789275244138669739D-02,&
+         & 0.343881570768790591876D-02,   0.347968070469521146972D-02/
+    DATA  W(366), W(367), W(368), W(369), W(370), W(371),&
+         &W(372), W(373), W(374), W(375), W(376), W(377),&
+         &W(378), W(379), W(380), W(381), W(382), W(383),&
+         &W(384), W(385), W(386), W(387), W(388), W(389),&
+         &W(390), W(391), W(392), W(393)&
+         &/0.352048336613417922682D-02,   0.356121934322919357659D-02,&
+         & 0.360188431545532431869D-02,   0.364247399027690353194D-02,&
+         & 0.368298410292403911967D-02,   0.372341041620379550870D-02,&
+         & 0.376374872034296338241D-02,   0.380399483285952829161D-02,&
+         & 0.384414459846013158917D-02,   0.388419388896099560998D-02,&
+         & 0.392413860322995774660D-02,   0.396397466714742455513D-02,&
+         & 0.400369803358421688562D-02,   0.404330468239442998549D-02,&
+         & 0.408279062042157838350D-02,   0.412215188151643401528D-02,&
+         & 0.416138452656509745764D-02,   0.420048464352596631772D-02,&
+         & 0.423944834747438184434D-02,   0.427827178065384480959D-02,&
+         & 0.431695111253279479928D-02,   0.435548253986604343679D-02,&
+         & 0.439386228676004195260D-02,   0.443208660474124713206D-02,&
+         & 0.447015177282692726900D-02,   0.450805409759782158001D-02,&
+         & 0.454578991327213285488D-02,   0.458335558178039420335D-02/
+    DATA  W(394), W(395), W(396), W(397), W(398), W(399),&
+         &W(400), W(401), W(402), W(403), W(404), W(405),&
+         &W(406), W(407), W(408), W(409), W(410), W(411),&
+         &W(412), W(413), W(414), W(415), W(416), W(417),&
+         &W(418), W(419), W(420), W(421)&
+         &/0.462074749284080687482D-02,   0.465796206403469754658D-02,&
+         & 0.469499574088179046532D-02,   0.473184499691503264714D-02,&
+         & 0.476850633375474925263D-02,   0.480497628118194150483D-02,&
+         & 0.484125139721057135214D-02,   0.487732826815870573054D-02,&
+         & 0.491320350871841897367D-02,   0.494887376202437487201D-02,&
+         & 0.498433569972103029914D-02,   0.501958602202842039909D-02,&
+         & 0.505462145780650125058D-02,   0.508943876461803986674D-02,&
+         & 0.512403472879005351831D-02,   0.515840616547381084096D-02,&
+         & 0.519254991870341614863D-02,   0.522646286145300596306D-02,&
+         & 0.526014189569259311205D-02,   0.529358395244259896547D-02,&
+         & 0.532678599182711857974D-02,   0.535974500312596681161D-02,&
+         & 0.539245800482555593606D-02,   0.542492204466865704951D-02,&
+         & 0.545713419970309863995D-02,   0.548909157632945623482D-02,&
+         & 0.552079131034778706457D-02,   0.555223056700346326850D-02/
+    DATA  W(422), W(423), W(424), W(425), W(426), W(427),&
+         &W(428), W(429), W(430), W(431), W(432), W(433),&
+         &W(434), W(435), W(436), W(437), W(438), W(439),&
+         &W(440), W(441), W(442), W(443), W(444), W(445),&
+         &W(446), W(447), W(448), W(449)&
+         &/0.558340654103215637610D-02,   0.561431645670402467678D-02,&
+         & 0.564495756786715368885D-02,   0.567532715799029830087D-02,&
+         & 0.570542254020497332312D-02,   0.573524105734693719020D-02,&
+         & 0.576478008199711142954D-02,   0.579403701652197628421D-02,&
+         & 0.582300929311348057702D-02,   0.585169437382850155033D-02,&
+         & 0.588008975062788803205D-02,   0.590819294541511788161D-02,&
+         & 0.593600151007459827614D-02,   0.596351302650963502011D-02,&
+         & 0.599072510668009471472D-02,   0.601763539263978131522D-02,&
+         & 0.604424155657354634589D-02,   0.607054130083414983949D-02,&
+         & 0.609653235797888692923D-02,   0.612221249080599294931D-02,&
+         & 0.614757949239083790214D-02,   0.617263118612191922727D-02,&
+         & 0.619736542573665996342D-02,   0.622178009535701763157D-02,&
+         & 0.624587310952490748541D-02,   0.626964241323744217671D-02,&
+         & 0.629308598198198836688D-02,   0.631620182177103938227D-02/
+    DATA  W(450), W(451), W(452), W(453), W(454), W(455),&
+         &W(456), W(457), W(458), W(459), W(460), W(461),&
+         &W(462), W(463), W(464), W(465), W(466), W(467),&
+         &W(468), W(469), W(470), W(471), W(472), W(473),&
+         &W(474), W(475), W(476), W(477)&
+         &/0.633898796917690165912D-02,   0.636144249136619145314D-02,&
+         & 0.638356348613413709795D-02,   0.640534908193868098342D-02,&
+         & 0.642679743793437438922D-02,   0.644790674400605734710D-02,&
+         & 0.646867522080231481688D-02,   0.648910111976869964292D-02,&
+         & 0.650918272318071200827D-02,   0.652891834417652442012D-02,&
+         & 0.654830632678944064054D-02,   0.656734504598007641819D-02,&
+         & 0.658603290766824937794D-02,   0.660436834876456498276D-02,&
+         & 0.662234983720168509457D-02,   0.663997587196526532519D-02,&
+         & 0.665724498312454708217D-02,   0.667415573186258997654D-02,&
+         & 0.669070671050613006584D-02,   0.670689654255504925648D-02,&
+         & 0.672272388271144108036D-02,   0.673818741690825799086D-02,&
+         & 0.675328586233752529078D-02,   0.676801796747810680683D-02,&
+         & 0.678238251212300746082D-02,   0.679637830740619795480D-02,&
+         & 0.681000419582894688374D-02,   0.682325905128564571420D-02/
+    DATA  W(478), W(479), W(480), W(481), W(482), W(483),&
+         &W(484), W(485), W(486), W(487), W(488), W(489),&
+         &W(490), W(491), W(492), W(493), W(494), W(495),&
+         &W(496), W(497), W(498), W(499), W(500), W(501),&
+         &W(502), W(503), W(504), W(505)&
+         &/0.683614177908911221841D-02,   0.684865131599535812903D-02,&
+         & 0.686078663022780697951D-02,   0.687254672150094831613D-02,&
+         & 0.688393062104341470995D-02,   0.689493739162046825872D-02,&
+         & 0.690556612755588354803D-02,   0.691581595475321433825D-02,&
+         & 0.692568603071643155621D-02,   0.693517554456992049848D-02,&
+         & 0.694428371707782549438D-02,   0.695300980066273063177D-02,&
+         & 0.696135307942366551493D-02,   0.696931286915342540213D-02,&
+         & 0.697688851735519545845D-02,   0.698407940325846925786D-02,&
+         & 0.699088493783425207545D-02,   0.699730456380953992594D-02,&
+         & 0.700333775568106572820D-02,   0.700898401972830440494D-02,&
+         & 0.701424289402572916425D-02,   0.701911394845431165171D-02,&
+         & 0.702359678471225911031D-02,   0.702769103632498213858D-02,&
+         & 0.703139636865428709508D-02,   0.703471247890678765907D-02,&
+         & 0.703763909614153052319D-02,   0.704017598127683066242D-02/
+    DATA  W(506), W(507), W(508), W(509), W(510), W(511)&
+         &/0.704232292709631209597D-02,   0.704407975825415053266D-02,&
+         & 0.704544633127951476780D-02,   0.704642253458020417748D-02,&
+         & 0.704700828844548013730D-02,   0.704720354504808967346D-02/
+    ! .. Executable Statements ..
+    ICHECK = 0
+    ANS = 0.0D0
+    EPMACH = X02AJF
+    IP = 0
+    IF (IPARM.EQ.0 .OR. IPARM.EQ.1) GO TO 20
+    IF (IPARM.EQ.2) GO TO 240
+    ICHECK = 2
+    GO TO 320
+
+    ! INITIAL INTEGRATION
+
+    ! CHECK FOR TRIVIAL CASE
+
+20  IF (ABS(A-B).GT.MAX(ABS(A),ABS(B))*EPMACH*10.0D0) GO TO 40
+    N = 0
+    ACC = 0.0D0
+    GO TO 320
+40  MRULE = MAXRUL
+    IF (MAXRUL.LT.1 .OR. MAXRUL.GT.9) MRULE = 9
+    EPSREL = ABS(RELACC)
+    EPSABS = ABS(ABSACC)
+    IF (EPSREL.EQ.0.0D0 .AND. EPSABS.EQ.0.0D0) EPSREL = 10.0D0*EPMACH
+    T1 = 0.0D0
+    IW = 0
+    K = 1
+    NB = 256
+    NTOP = 0
+    LP = 0
+
+    ! SCALE FACTORS
+
+    SUM = (B+A)*0.5D0
+    DIFF = (B-A)*0.5D0
+    FZERO = F(SUM)
+    NTOPNB = NTOP + NB
+    FUNCTP(NTOPNB) = FZERO
+    FUNCTM(NTOPNB) = 0.0D0
+
+    ! 1-POINT GAUSS
+
+    R1 = W(1)*FZERO*DIFF
+60  IF (K.EQ.MRULE) GO TO 100
+    IW = IW + LP + 1
+    R2 = R1
+    K = K + 1
+    NB = NB/2
+    LP = LP + LP + 1
+    NTOP = NTOP + NB
+    NTOPNB = NTOP + NB
+
+    ! EVALUATE RULE K
+
+    IF (K.EQ.2) THEN
+       NZ = NB
+    ELSE
+       NZ = 2*NB
+    END IF
+    DO I = NB, NTOP, NZ
+       X = P(I)*DIFF
+       F1 = F(SUM+X)
+       F2 = F(SUM-X)
+       FUNCTP(I) = F1 + F2
+       FUNCTM(I) = F1 - F2
+    ENDDO
+
+    IERR = 0
+    CALL X03AAF(W(IW+1),LP+1,FUNCTP(NB),&
+         &NB*LP+1,LP+1,1,NB,0.0D0,0.0D0,R1,R1PLUS,.FALSE.,IERR)
+    R1 = R1*DIFF
+    TEST = MAX(EPSREL*ABS(R1),EPSABS)
+    T1 = ABS(R1-R2)
+
+    ! CHECK FOR CONVERGENCE
+
+    IF (T1.LE.TEST) GO TO 120
+    GO TO 60
+
+    ! NO CONVERGENCE
+
+100 ICHECK = 1
+120 N = LP + LP + 1
+    NPTS = 3*(N+1)/4
+    ACC = T1
+    ANS = R1
+    IF (IPARM.EQ.0) GO TO 320
+    IP = 1
+
+    ! EVALUATE EXPANSION COEFFICIENTS
+
+    ! APPLY RULE USED FOR DEFINITE INTEGRATION TO INTEGRATE-
+
+    !     F(SUM+DIFF*X)*P(K-1,X) OVER (-1,1),K=1,2,..,NPTS
+
+    ! WHERE P(K-1,X) IS THE LEGENDRE POLYNOMIAL OF ORDER K-1
+    ! AND HENCE OBTAIN THE EXPANSION COEFFICIENTS.
+
+    DO I = NB, NTOPNB, NB
+       IW = IW + 1
+       P0(I) = 0.0D0
+       P1(I) = 1.0D0
+       FUNCTP(I) = FUNCTP(I)*W(IW)
+       FUNCTM(I) = FUNCTM(I)*W(IW)
+    ENDDO
+
+    DO K = 1, NPTS
+       IERR = 0
+       IF (MOD(K,2).EQ.1) GO TO 160
+       CALL X03AAF(P1(NB),NB*LP+1,FUNCTM(NB),&
+            &NB*LP+1,LP+1,NB,NB,0.0D0,0.0D0,TT,TTPLUS,.FALSE.,IERR)
+       GO TO 180
+160    CALL X03AAF(P1(NB),NB*LP+1,FUNCTP(NB),&
+            &NB*LP+1,LP+1,NB,NB,0.0D0,0.0D0,TT,TTPLUS,.FALSE.,IERR)
+180    ALPHA(K) = 0.5D0*DIFF*TT*DBLE(2*K-1)
+       C1 = DBLE(2*K-1)/DBLE(K)
+       C2 = DBLE(K-1)/DBLE(K)
+       DO I = NB, NTOPNB, NB
+          PP = C1*P(I)*P1(I) - C2*P0(I)
+          P0(I) = P1(I)
+          P1(I) = PP
+       ENDDO
+
+    ENDDO
+
+    IF (N.GT.7) NPTS = 3*N/4
+    ALPHA(386) = A
+    ALPHA(387) = B
+    ALPHA(388) = DBLE(ICHECK) + 0.25D0
+    ALPHA(390) = DBLE(NPTS) + 0.25D0
+    GO TO 320
+
+    ! EVALUATE INDEFINITE INTEGRAL OVER (A,B)
+    ! CHECK FOR TRIVIAL CASES
+
+240 IF (ABS(A-B).LE.MAX(ABS(A),ABS(B))*EPMACH*10.0D0) GO TO 340
+    IP = INT(ALPHA(389))
+    IF (IP.NE.0) GO TO 260
+    ICHECK = 3
+    GO TO 320
+260 ICHECK = INT(ALPHA(388))
+    NPTS = INT(ALPHA(390))
+    AA = ALPHA(386)
+    BB = ALPHA(387)
+    IF (MIN(B,A).GE.MIN(BB,AA) .AND. MAX(B,A).LE.MAX(BB,AA)) GO TO 280
+    ICHECK = 4
+    GO TO 340
+
+    ! EVALUATE THE INTEGRAL OF THE LEGENDRE EXPANSION OVER (A,B)
+
+280 SUM = (BB+AA)*0.5D0
+    DIFF = (BB-AA)*0.5D0
+    XA = (A-SUM)/DIFF
+    XB = (B-SUM)/DIFF
+    BXA0 = 0.0D0
+    BXA1 = 0.0D0
+    BXB0 = 0.0D0
+    BXB1 = 0.0D0
+    ALPHA(NPTS+1) = 0.0D0
+    ALPHA(NPTS+2) = 0.0D0
+    DO K = 1, NPTS
+       J = NPTS - K
+       C1 = DBLE(J+1)
+       C2 = DBLE(2*J+3)
+       C3 = DBLE(J+2)
+       Q = ALPHA(J+1)/DBLE(2*J+1) - ALPHA(J+3)/DBLE(2*J+5)
+       BXA = (Q+C2*BXA0*XA-C3*BXA1)/C1
+       BXB = (Q+C2*BXB0*XB-C3*BXB1)/C1
+       BXA1 = BXA0
+       BXA0 = BXA
+       BXB1 = BXB0
+       BXB0 = BXB
+    ENDDO
+
+    ANS = XB*BXB0 - BXB1 - XA*BXA0 + BXA1
+    GO TO 340
+320 ALPHA(389) = DBLE(IP) + 0.25D0
+340 IFAIL = P01ABF(IFAIL,ICHECK,SRNAME,0,P01REC)
+    RETURN
+  END SUBROUTINE D01ARF
+
+
+  SUBROUTINE M01DAF(RV,M1,M2,ORDER,IRANK,IFAIL)
+
+   ! USE declare
+!use nrtype
+    IMPLICIT NONE
+
+    ! M01DAF RANKS A VECTOR OF REAL NUMBERS IN ASCENDING
+    ! OR DESCENDING ORDER.
+    ! M01DAF USES A VARIANT OF LIST-MERGING, AS DESCRIBED
+    ! BY KNUTH. THE ROUTINE TAKES ADVANTAGE OF NATURAL
+    ! ORDERING IN THE DATA, AND USES A SIMPLE LIST INSERTION
+    ! IN A PREPARATORY PASS TO GENERATE ORDERED LISTS OF
+    ! LENGTH AT LEAST 10. THE RANKING IS STABLE: EQUAL ELEMENTS
+    ! PRESERVE THEIR ORDERING IN THE INPUT DATA.
+    ! THE MINIMUM LENGTH OF THE LISTS AT THE END OF THE
+    ! PREPARATORY PASS IS DEFINED BY THE VARIABLE MAXINS.
+
+    ! .. Parameters ..
+    CHARACTER(6), PARAMETER :: SRNAME='M01DAF'
+    INTEGER, PARAMETER :: MAXINS=10
+    ! .. Scalar Arguments ..
+    INTEGER :: IFAIL, M1, M2
+    CHARACTER(1) :: ORDER
+    ! .. Array Arguments ..
+    DOUBLE PRECISION, DIMENSION(M2) :: RV
+    INTEGER, DIMENSION(M2) :: IRANK
+    ! .. Local Scalars ..
+    DOUBLE PRECISION :: A, B, C
+    INTEGER :: I, I1, I2, IERR, ILIST, J, J1, J2, K, K1, K2, L,&
+         &LIST1, LIST2, NLAST, NPREV, NREC
+    ! .. Local Arrays ..
+    CHARACTER(80), DIMENSION(2) :: P01REC
+
+    ! .. Executable Statements ..
+
+    !   CHECK THE ARGUMENTS AND DEAL WITH THE TRIVIAL CASE.
+
+    IF (M2.LT.1 .OR. M1.LT.1 .OR. M1.GT.M2) THEN
+       IERR = 1
+       WRITE (P01REC,FMT=99999) M1, M2
+       NREC = 2
+    ELSE IF (ORDER.NE.'A' .AND. ORDER.NE.'a' .AND. ORDER.NE.'D' .AND.&
+         &ORDER.NE.'d') THEN
+       IERR = 2
+       WRITE (P01REC,FMT=99998) ORDER
+       NREC = 1
+    ELSE IF (M1.EQ.M2) THEN
+       IRANK(M2) = M2
+       IERR = 0
+    ELSE
+       IERR = 0
+
+       !    INITIALISE, USING NATURAL RUNS IN BOTH DIRECTIONS AND
+       !    STRAIGHT LIST INSERTION FOR SMALL LISTS.
+
+       !    I  POINTS TO THE SMALLEST ELEMENT IN THE CURRENT LIST
+       !    J  POINTS TO THE LARGEST  ELEMENT IN THE CURRENT LIST
+       !    B  IS THE VALUE OF THE SMALLEST ELEMENT IN CURRENT LIST
+       !    C  IS THE VALUE OF THE LARGEST  ELEMENT IN CURRENT LIST
+
+       ILIST = -1
+       K = M1
+       I = K
+       J = K
+       L = K + MAXINS
+       B = RV(K)
+       C = B
+       DO K = M1 + 1, M2
+
+          !       DEAL WITH ADDITIONS AT EITHER END.
+
+          A = RV(K)
+          IF (A.GE.C) THEN
+             IRANK(J) = K
+             J = K
+             C = A
+          ELSE IF (A.LT.B) THEN
+             IRANK(K) = I
+             I = K
+             B = A
+          ELSE
+
+             !          DO AN ASCENDING LIST INSERTION.
+
+             IF (K.LT.L) THEN
+                I2 = I
+20              I1 = I2
+                I2 = IRANK(I1)
+                IF (A.GE.RV(I2)) GO TO 20
+                IRANK(I1) = K
+                IRANK(K) = I2
+             ELSE
+
+                !             ADD THE CURRENT LIST ON TO THE OTHERS.
+
+                IF (ILIST.LT.0) THEN
+                   LIST1 = -I
+                   ILIST = 0
+                ELSE IF (ILIST.EQ.0) THEN
+                   LIST2 = -I
+                   ILIST = 1
+                   NPREV = NLAST
+                ELSE
+                   IRANK(NPREV) = -I
+                   NPREV = NLAST
+                END IF
+
+                NLAST = J
+                I = K
+                J = K
+                L = K + MAXINS
+                B = RV(K)
+                C = B
+             END IF
+          END IF
+       ENDDO
+
+       !    TIDY UP AT THE END.
+
+       IRANK(J) = 0
+       IF (ILIST.LT.0) THEN
+          LIST1 = -I
+          GO TO 280
+       ELSE IF (ILIST.EQ.0) THEN
+          LIST2 = -I
+       ELSE
+          IRANK(NPREV) = -I
+       END IF
+       IRANK(NLAST) = 0
+
+       !    AT THIS POINT:
+       !    LIST1 = - (INDEX OF LEAST ELEMENT IN THE FIRST LIST)
+       !    LIST2 = - (INDEX OF LEAST ELEMENT IN THE SECOND LIST)
+       !    FOR EACH K, IRANK(K) IS THE INDEX OF THE NEXT ELEMENT IN THE
+       !    CURRENT LIST, EXCEPT THAT, IF THERE IS NO SUCH ELEMENT,
+       !    IRANK(K) IS - (INDEX OF THE LEAST ELEMENT IN THE NEXT LIST
+       !    BUT 1)  OR 0 IF THERE IS NO SUCH LIST.
+
+       !    START MERGING LISTS BY PAIRS.
+
+60     ILIST = -1
+       I = -LIST1
+       J = -LIST2
+80     K = I
+       IF (RV(I).GT.RV(J)) K = J
+       IF (ILIST.LT.0) THEN
+          LIST1 = -K
+          ILIST = 0
+       ELSE IF (ILIST.EQ.0) THEN
+          LIST2 = -K
+          ILIST = 1
+          NLAST = L
+       ELSE
+          IRANK(NLAST) = -K
+          NLAST = L
+       END IF
+
+       !    MOVE ALONG THE LISTS UNTIL ONE FINISHES.
+
+       !    NEW VARIABLES I2, J2 AND K2 ARE USED INSTEAD OF I, J AND K
+       !    WITHIN THE INNERMOST BLOCK TO ENCOURAGE OPTIMISING COMPILERS TO
+       !    STORE THEM IN REGISTERS.
+       !     I2 POINTS TO THE CURRENT ELEMENT IN THE FIRST LIST
+       !     J2 POINTS TO THE CURRENT ELEMENT IN THE SECOND LIST
+       !     K2 POINTS TO THE CURRENT ELEMENT IN THE MERGED LIST
+
+       I2 = I
+       J2 = J
+       IF (K.NE.I2) GO TO 140
+100    A = RV(J2)
+       K2 = I2
+120    I2 = K2
+       K2 = IRANK(I2)
+       IF (K2.LE.0) GO TO 180
+       IF (A.GE.RV(K2)) GO TO 120
+       IRANK(I2) = J2
+       I2 = K2
+140    A = RV(I2)
+       K2 = J2
+160    J2 = K2
+       K2 = IRANK(J2)
+       IF (K2.LE.0) GO TO 200
+       IF (A.GT.RV(K2)) GO TO 160
+       IRANK(J2) = I2
+       J2 = K2
+       GO TO 100
+
+       !    ADD THE REMAINS OF ONE LIST TO THE OTHER.
+
+180    K = 1
+       I1 = K2
+       GO TO 220
+200    K = 2
+       J1 = K2
+220    I = I2
+       J = J2
+       IF (K.EQ.1) THEN
+
+          !       FIRST LIST IS EXHAUSTED
+
+          IRANK(I) = J
+          I = -I1
+          J1 = J
+240       J = J1
+          J1 = IRANK(J)
+          IF (J1.GT.0) GO TO 240
+          L = J
+          J = -J1
+       ELSE
+
+          !       SECOND LIST IS EXHAUSTED
+
+          IRANK(J) = I
+          J = -J1
+          I1 = I
+260       I = I1
+          I1 = IRANK(I)
+          IF (I1.GT.0) GO TO 260
+          L = I
+          I = -I1
+       END IF
+
+       !    TIDY UP AND CARRY ON IF NOT FINISHED.
+
+       IF ((I.NE.0) .AND. (J.NE.0)) GO TO 80
+       IRANK(L) = 0
+       K = I + J
+       IF (ILIST.GT.0) THEN
+          IRANK(NLAST) = -K
+          GO TO 60
+       ELSE IF (K.NE.0) THEN
+          LIST2 = -K
+          GO TO 60
+       END IF
+
+       !    IF DESCENDING, REVERSE ALL POINTERS BETWEEN EQUALITY
+       !    BLOCKS.
+
+280    IF ((ORDER.EQ.'D') .OR. (ORDER.EQ.'d')) THEN
+          I = 0
+          J = -LIST1
+300       K = J
+          K1 = K
+          A = RV(K)
+320       K = K1
+          K1 = IRANK(K)
+          IF (K1.NE.0) THEN
+             IF (A.EQ.RV(K1)) GO TO 320
+          END IF
+          IRANK(K) = I
+          I = J
+          J = K1
+          IF (J.NE.0) GO TO 300
+          LIST1 = -I
+       END IF
+
+       !    CONVERT THE LIST FORM TO RANKS AND RETURN.
+
+       K = M1
+       I = -LIST1
+340    I1 = IRANK(I)
+       IRANK(I) = K
+       K = K + 1
+       I = I1
+       IF (I.GT.0) GO TO 340
+
+    END IF
+
+    IF (IERR.NE.0) THEN
+       IFAIL = P01ABF(IFAIL,IERR,SRNAME,NREC,P01REC)
+    ELSE
+       IFAIL = 0
+    END IF
+    RETURN
+
+99999 FORMAT (' ** On entry, one or more of the following parameter va',&
+         &'lues is illegal',/'    M1 =',I16,'  M2 =',I16)
+99998 FORMAT (' ** On entry, ORDER has an illegal value: ORDER = ',A1)
+  END SUBROUTINE M01DAF
+
+
+  SUBROUTINE M01EAF(RV,M1,M2,IRANK,IFAIL)
+
+    !USE declare
+!use nrtype
+    IMPLICIT NONE
+
+    ! M01EAF RE-ARRANGES A VECTOR OF REAL NUMBERS INTO
+    ! THE ORDER SPECIFIED BY A VECTOR OF RANKS.
+    ! M01EAF IS DESIGNED TO BE USED TYPICALLY IN CONJUNCTION
+    ! WITH THE M01D- RANKING ROUTINES. AFTER ONE OF THE M01D-
+    ! ROUTINES HAS BEEN CALLED TO DETERMINE A VECTOR OF RANKS,
+    ! M01EAF CAN BE CALLED TO RE-ARRANGE A VECTOR OF REAL
+    ! NUMBERS INTO THE RANK ORDER. IF THE VECTOR OF RANKS HAS
+    ! BEEN GENERATED IN SOME OTHER WAY, THEN M01ZBF SHOULD BE
+    ! CALLED TO CHECK ITS VALIDITY BEFORE M01EAF IS CALLED.
+
+    ! .. Parameters ..
+    CHARACTER(6), PARAMETER :: SRNAME='M01EAF'
+    ! .. Scalar Arguments ..
+    INTEGER :: IFAIL, M1, M2
+    ! .. Array Arguments ..
+    DOUBLE PRECISION, DIMENSION(M2) :: RV
+    INTEGER, DIMENSION(M2) :: IRANK
+    ! .. Local Scalars ..
+    DOUBLE PRECISION :: A, B
+    INTEGER :: I, IERR, J, K
+    ! .. Local Arrays ..
+    CHARACTER(80), DIMENSION(2) :: P01REC
+
+    ! .. Executable Statements ..
+
+    !   CHECK THE PARAMETERS AND MODIFY IRANK.
+
+    IF (M2.LT.1 .OR. M1.LT.1 .OR. M1.GT.M2) THEN
+       IERR = 1
+       WRITE (P01REC,FMT=99999) M1, M2
+    ELSE
+       IERR = 0
+       DO I = M1, M2
+          J = IRANK(I)
+          IF ((J.LT.M1) .OR. (J.GT.M2)) GO TO 100
+          IF (I.NE.J) IRANK(I) = -J
+       ENDDO
+
+       !    MOVE EACH NON-TRIVIAL CYCLE ROUND.
+
+       DO I = M1, M2
+          K = -IRANK(I)
+          IF (K.GE.0) THEN
+             J = I
+             A = RV(I)
+40           IRANK(J) = K
+             B = RV(K)
+             RV(K) = A
+             J = K
+             A = B
+             K = -IRANK(J)
+             IF (K.GT.0) GO TO 40
+             IF (J.NE.I) GO TO 120
+          END IF
+       ENDDO
+
+    END IF
+
+    !   RETURN
+
+80  IF (IERR.NE.0) THEN
+       IFAIL = P01ABF(IFAIL,IERR,SRNAME,2,P01REC)
+    ELSE
+       IFAIL = 0
+    END IF
+    RETURN
+100 IERR = 2
+    WRITE (P01REC(2),FMT=99997) I, J
+    GO TO 140
+120 IERR = 3
+    WRITE (P01REC(2),FMT=99996) J
+140 WRITE (P01REC(1),FMT=99998)
+
+    ! RESTORE IRANK
+
+    DO J = M1, M2
+       IRANK(J) = ABS(IRANK(J))
+    ENDDO
+
+    GO TO 80
+
+99999 FORMAT (' ** On entry, one or more of the following parameter va',&
+         &'lues is illegal',/'    M1 =',I16,'  M2 =',I16)
+99998 FORMAT (' ** IRANK(M1:M2) does not contain a permutation of the ',&
+         &'integers M1 to M2')
+99997 FORMAT ('    IRANK(',I6,') contains an out-of-range value',I16)
+99996 FORMAT ('    IRANK contains a repeated value',I16)
+  END SUBROUTINE M01EAF
+
+
+  FUNCTION P01ABF(IFAIL,IERROR,SRNAME,NREC,REC)
+
+    !USE declare
+!use nrtype
+    IMPLICIT NONE
+
+    ! P01ABF is the error-handling routine for the NAG Library.
+    ! P01ABF either returns the value of IERROR through the routine
+    ! name (soft failure), or terminates execution of the PROGRAM
+    ! (hard failure). Diagnostic messages may be output.
+    ! IF IERROR = 0 (successful EXIT from the calling routine),
+    ! the value 0 is returned through the routine name, and no
+    ! message is output
+    ! IF IERROR is non-zero (abnormal EXIT from the calling routine),
+    ! the action taken depends on the value of IFAIL.
+    ! IFAIL =  1: soft failure, silent EXIT (i.e. no messages are
+    !             output)
+    ! IFAIL = -1: soft failure, noisy EXIT (i.e. messages are output)
+    ! IFAIL =-13: soft failure, noisy EXIT but standard messages from
+    !             P01ABF are suppressed
+    ! IFAIL =  0: hard failure, noisy EXIT
+    ! For compatibility WITH certain routines included before Mark 12
+    ! P01ABF also allows an alternative specification of IFAIL in which
+    ! it is regarded as a decimal INTEGER WITH least significant digits
+    ! cba. THEN
+    ! a = 0: hard failure  a = 1: soft failure
+    ! b = 0: silent EXIT   b = 1: noisy EXIT
+    ! except that hard failure now always implies a noisy EXIT.
+
+    ! .. Scalar Arguments ..
+    INTEGER :: IERROR, IFAIL, NREC
+    CHARACTER(*) :: SRNAME
+    ! .. Array Arguments ..
+    CHARACTER (*), DIMENSION(*) :: REC
+
+    INTEGER :: P01ABF
+
+    ! .. Local Scalars ..
+    INTEGER :: I, NERR
+    CHARACTER(72) :: MESS
+
+    ! .. Executable Statements ..
+    IF (IERROR.NE.0) THEN
+       !    Abnormal EXIT from calling routine
+       IF (IFAIL.EQ.-1 .OR. IFAIL.EQ.0 .OR. IFAIL.EQ.-13 .OR.&
+            &(IFAIL.GT.0 .AND. MOD(IFAIL/10,10).NE.0)) THEN
+          !       Noisy EXIT
+          CALL X04AAF(0,NERR)
+          DO I = 1, NREC
+             CALL X04BAF(NERR,REC(I))
+          ENDDO
+
+          IF (IFAIL.NE.-13) THEN
+             WRITE (MESS,FMT=99999) SRNAME, IERROR
+             CALL X04BAF(NERR,MESS)
+             IF (ABS(MOD(IFAIL,10)).NE.1) THEN
+                !             Hard failure
+                CALL X04BAF(NERR,&
+                     &' ** NAG hard failure - execution terminated')
+                STOP
+             ELSE
+                !             Soft failure
+                CALL X04BAF(NERR,&
+                     &' ** NAG soft failure - control returned')
+             END IF
+          END IF
+       END IF
+    END IF
+    P01ABF = IERROR
+    RETURN
+99999 FORMAT (' ** ABNORMAL EXIT from NAG Library routine ',A,': IFAIL',&
+         &' =',I6)
+  END FUNCTION P01ABF
+
+
+  SUBROUTINE X03AAF(A,ISIZEA,B,ISIZEB,N,ISTEPA,ISTEPB,C1,C2,D1,D2,SW,IFAIL)
+
+    !USE declare
+!use nrtype
+    IMPLICIT NONE
+
+    ! CALCULATES THE VALUE OF A SCALAR PRODUCT USING BASIC
+    ! OR ADDITIONAL PRECISION AND ADDS IT TO A BASIC OR ADDITIONAL
+    ! PRECISION INITIAL VALUE.
+
+    ! .. Parameters ..
+    CHARACTER(6), PARAMETER :: SRNAME='X03AAF'
+    ! .. Scalar Arguments ..
+    DOUBLE PRECISION :: C1, C2, D1, D2
+    INTEGER :: IFAIL, ISIZEA, ISIZEB, ISTEPA, ISTEPB, N
+    LOGICAL :: SW
+    ! .. Array Arguments ..
+    DOUBLE PRECISION, DIMENSION(ISIZEA) :: A
+    DOUBLE PRECISION, DIMENSION(ISIZEB) :: B
+    ! .. Local Scalars ..
+    DOUBLE PRECISION :: SUM
+    DOUBLE PRECISION :: X
+    INTEGER :: I, IERR, IS, IT
+    ! .. Local Arrays ..
+    CHARACTER(1), DIMENSION(1) :: P01REC
+
+    ! .. Executable Statements ..
+    IERR = 0
+    IF (ISTEPA.LE.0 .OR. ISTEPB.LE.0) IERR = 1
+    IF (ISIZEA.LE.(N-1)*ISTEPA .OR. ISIZEB.LE.(N-1)*ISTEPB) IERR = 2
+    IF (IERR.EQ.0) GO TO 20
+    IFAIL = P01ABF(IFAIL,IERR,SRNAME,0,P01REC)
+    RETURN
+20  IS = 1 - ISTEPA
+    IT = 1 - ISTEPB
+    IF (SW) GO TO 80
+    X = 0.0D0
+    IF (N.LT.1) GO TO 60
+    DO I = 1, N
+       IS = IS + ISTEPA
+       IT = IT + ISTEPB
+       X = X + A(IS)*B(IT)
+    ENDDO
+60  D1 = X + (C1+C2)
+    D2 = 0.0D0
+    IFAIL = 0
+    RETURN
+80  SUM = 0.0D0
+    IF (N.LT.1) GO TO 120
+    DO I = 1, N
+       IS = IS + ISTEPA
+       IT = IT + ISTEPB
+       SUM = SUM + DBLE(A(IS))*B(IT)
+    ENDDO
+120 SUM = SUM + (DBLE(C1)+C2)
+    ! D1 = SUM + SUM - QREAL(DBLE(SUM))
+    ! THE LAST STATEMENT ASSUMES THAT THE MACHINE SIMPLY
+    ! TRUNCATES WHEN ASSIGNING A REAL*16 QUANTITY
+    ! TO A DOUBLE PRECISION VARIABLE. IF INSTEAD THE MACHINE
+    ! ROUNDS, REPLACE THE LAST STATEMENT BY
+    D1 = SUM
+    D2 = SUM - D1
+    IFAIL = 0
+    RETURN
+  END SUBROUTINE X03AAF
+
+
+  SUBROUTINE X04AAF(I,NERR)
+    IMPLICIT NONE
+
+    ! IF I = 0, SETS NERR TO CURRENT ERROR MESSAGE UNIT NUMBER
+    ! (STORED IN NERR1).
+    ! IF I = 1, CHANGES CURRENT ERROR MESSAGE UNIT NUMBER TO
+    ! VALUE SPECIFIED BY NERR.
+
+    ! .. Scalar Arguments ..
+    INTEGER :: I, NERR
+    ! .. Local Scalars ..
+    INTEGER :: NERR1
+    ! .. SAVE statement ..
+    SAVE NERR1
+    ! .. DATA statements ..
+    DATA NERR1/0/
+    ! .. Executable Statements ..
+    IF (I.EQ.0) NERR = NERR1
+    IF (I.EQ.1) NERR1 = NERR
+    RETURN
+  END SUBROUTINE X04AAF
+
+  SUBROUTINE X04BAF(NOUT,REC)
+    IMPLICIT NONE
+
+    ! X04BAF writes the contents of REC to the unit defined by NOUT.
+    ! Trailing blanks are not output, except that IF REC is entirely
+    ! blank, a single blank CHARACTER is output.
+    ! IF NOUT.LT.0, i.e. IF NOUT is not a valid Fortran unit identifier,
+    ! THEN no output occurs.
+
+    ! .. Scalar Arguments ..
+    INTEGER :: NOUT
+    CHARACTER(*) :: REC
+    ! .. Local Scalars ..
+    INTEGER :: I
+
+    ! .. Executable Statements ..
+    IF (NOUT.GE.0) THEN
+       !    Remove trailing blanks
+       DO I = LEN(REC), 2, -1
+          IF (REC(I:I).NE.' ') GO TO 40
+       ENDDO
+       !    WRITE record to EXTERNAL file
+40     WRITE (NOUT,'(A)') REC(1:I)
+    END IF
+    RETURN
+  END SUBROUTINE X04BAF
+
+END MODULE adaptint

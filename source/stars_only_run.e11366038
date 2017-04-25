@@ -1,0 +1,208 @@
+[node046:mpi_rank_74][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_74][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_88][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_88][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_78][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_78][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_81][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_81][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_84][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_84][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_0][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_0][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_86][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_86][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_87][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_87][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_75][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_75][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_76][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_76][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_1][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_79][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_79][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_2][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_2][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_80][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_80][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_40][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_40][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_83][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_83][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_41][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_41][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_77][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_77][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_1][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_85][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_85][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_45][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_45][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_82][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_82][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_43][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_43][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_89][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_89][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_44][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_44][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_66][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_66][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_46][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_46][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_67][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_67][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_47][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_47][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_70][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_70][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_39][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_39][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_92][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_92][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_42][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_42][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_95][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_95][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_38][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_38][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_98][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_98][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_37][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_37][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_68][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_68][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_9][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_9][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_69][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_69][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_28][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_28][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_71][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_71][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_48][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_48][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_72][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_72][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_49][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_49][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_73][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_73][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_4][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_4][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_91][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_91][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_7][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_7][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_93][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_93][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_36][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_36][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_94][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_94][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_11][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_11][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_101][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_101][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_26][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_26][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_61][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_61][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_33][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_33][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_90][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_90][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_8][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_8][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_96][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_96][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_16][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_16][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_97][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_97][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_13][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_13][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_99][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_99][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_17][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_17][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_100][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_100][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_18][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_18][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_50][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_50][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_19][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_19][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_63][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_63][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_20][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_20][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_102][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_102][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_22][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_22][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_62][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_62][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_27][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_27][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_53][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_53][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_29][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_29][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_54][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_54][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_24][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_24][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_51][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_51][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_32][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_32][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_52][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_52][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_21][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_21][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_55][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_55][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_23][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_23][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_56][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_56][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_25][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_25][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_58][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_58][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_12][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_12][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_59][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_59][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_15][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_15][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_60][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_60][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_5][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_5][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_103][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_103][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_6][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_6][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_64][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_64][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_3][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_3][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_57][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_57][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_34][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_34][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_35][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_35][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node046:mpi_rank_65][rdma_find_network_type] QLogic IB card detected in system
+[node046:mpi_rank_65][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_10][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_10][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_30][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_30][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_14][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_14][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance
+[node047:mpi_rank_31][rdma_find_network_type] QLogic IB card detected in system
+[node047:mpi_rank_31][rdma_find_network_type] Please re-configure the library with the '--with-device=ch3:psm' configure option for best performance

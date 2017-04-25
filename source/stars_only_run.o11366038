@@ -1,0 +1,686 @@
+
+   School of Mathematical and Physical Sciences
+             _____ __________  _________
+            /     \\______   \/   _____/
+           /  \ /  \|     ___/\_____  \ 
+          /    Y    \    |    /        \
+          \____|__  /____|   /_______  /
+                  \/                 \/ @HPC
+
+ - Hostname          = node047
+ - IP address        = 10.141.0.47
+ - Kernel            = 2.6.32-431.40.2.el6.nsc1.x86_64
+ - Processor         = AMD Opteron(tm) Processor 6378 
+ - Cores             = 64
+ - CPU usage         = 12%
+ - Memory usage      = 14079M / 258447M
+ - Swap usage        = 9676M / 15624M
+ - /mnt/lustre usage =  / 
+ - Users             = 0
+ - Uptime            = 138 days
+
+See [1mmodule --help[0m for configuring Environment Modules.
+
+Contact: [1mmps-support@sussex.ac.uk[0m
+
+ max num cells    42210291        6816
+ done cube reading, maxval cube         215           0           0           0
+          -1           0           0
+ spdim=    42210291
+ halofinds to recompose:
+ 15.1
+ Age to recompose:
+ 10.0
+ # of cell =         250
+ # of checkpoints =            1
+ 
+ Processing redshift =    15.1319999694824     
+ halo file, z
+ /lustre/scratch/astro/hr203/244Mpc_f2_8.2S_wstars/sources/15.132-coarsest_wsubg
+ rid_sources.dat                                                                
+                                                                                
+                 15.1319999694824     
+ halo file, z
+ /lustre/scratch/astro/hr203/244Mpc_f2_8.2S_wstars/sources/15.132-coarsest_wsubg
+ rid_sources.dat                                                                
+                                                                                
+                 15.1319999694824     
+ Max number of halo     2126351
+ Halo considered      742791
+ mim max mass halo   100000002.497801        39869986772.2451     
+ Number of halo moved, rejected, frac of rejection           0           0
+ NaN           
+ max halo age   10.00000    
+ Read_halofile exit. nhalo      742791
+ Halofile reading : done : time    17.72330    
+ JOB DISTRIBUTION, RANK, offset, onset           1        7143       14284
+ JOB DISTRIBUTION, RANK, offset, onset           2       14285       21426
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set           1        7143       14284
+  1.4987422E+10
+ JOB DISTRIBUTION, RANK, offset, onset           3       21427       28568
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set           2       14285       21426
+  1.0847134E+10
+ JOB DISTRIBUTION, RANK, offset, onset           4       28569       35710
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set           3       21427       28568
+  2.2695743E+10
+ JOB DISTRIBUTION, RANK, offset, onset           5       35711       42852
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set           4       28569       35710
+  1.0835076E+10
+ JOB DISTRIBUTION, RANK, offset, onset           6       42853       49994
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set           5       35711       42852
+  1.5016661E+10
+ JOB DISTRIBUTION, RANK, offset, onset           7       49995       57136
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set           6       42853       49994
+  3.1343555E+10
+ JOB DISTRIBUTION, RANK, offset, onset           8       57137       64278
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set           7       49995       57136
+  2.5416669E+10
+ JOB DISTRIBUTION, RANK, offset, onset           9       64279       71420
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set           8       57137       64278
+  1.2518564E+10
+ JOB DISTRIBUTION, RANK, offset, onset          10       71421       78562
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set           9       64279       71420
+  8.8250972E+09
+ JOB DISTRIBUTION, RANK, offset, onset          11       78563       85704
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          10       71421       78562
+  1.5063608E+10
+ JOB DISTRIBUTION, RANK, offset, onset          12       85705       92846
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          11       78563       85704
+  1.0151461E+10
+ JOB DISTRIBUTION, RANK, offset, onset          13       92847       99988
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          12       85705       92846
+  1.6038740E+10
+ JOB DISTRIBUTION, RANK, offset, onset          14       99989      107130
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          13       92847       99988
+  1.5137469E+10
+ JOB DISTRIBUTION, RANK, offset, onset          15      107131      114272
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          14       99989      107130
+  1.2409306E+10
+ JOB DISTRIBUTION, RANK, offset, onset          16      114273      121414
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          15      107131      114272
+  1.3316123E+10
+ JOB DISTRIBUTION, RANK, offset, onset          17      121415      128556
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          16      114273      121414
+  1.0255372E+10
+ JOB DISTRIBUTION, RANK, offset, onset          18      128557      135698
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          17      121415      128556
+  2.1642865E+10
+ JOB DISTRIBUTION, RANK, offset, onset          19      135699      142840
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          18      128557      135698
+  1.1614718E+10
+ JOB DISTRIBUTION, RANK, offset, onset          20      142841      149982
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          19      135699      142840
+  1.3201228E+10
+ JOB DISTRIBUTION, RANK, offset, onset          21      149983      157124
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          20      142841      149982
+  1.2527122E+10
+ JOB DISTRIBUTION, RANK, offset, onset          22      157125      164266
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          21      149983      157124
+  1.3357378E+10
+ JOB DISTRIBUTION, RANK, offset, onset          23      164267      171408
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          22      157125      164266
+  1.4143477E+10
+ JOB DISTRIBUTION, RANK, offset, onset          24      171409      178550
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          23      164267      171408
+  1.4142866E+10
+ JOB DISTRIBUTION, RANK, offset, onset          25      178551      185692
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          24      171409      178550
+  1.0883153E+10
+ JOB DISTRIBUTION, RANK, offset, onset          26      185693      192834
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          25      178551      185692
+  2.1670492E+10
+ JOB DISTRIBUTION, RANK, offset, onset          27      192835      199976
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          26      185693      192834
+  2.4042889E+10
+ JOB DISTRIBUTION, RANK, offset, onset          28      199977      207118
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          27      192835      199976
+  1.9220535E+10
+ JOB DISTRIBUTION, RANK, offset, onset          29      207119      214260
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          28      199977      207118
+  1.0909115E+10
+ JOB DISTRIBUTION, RANK, offset, onset          30      214261      221402
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          29      207119      214260
+  1.1603969E+10
+ JOB DISTRIBUTION, RANK, offset, onset          31      221403      228544
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          30      214261      221402
+  1.9121027E+10
+ JOB DISTRIBUTION, RANK, offset, onset          32      228545      235686
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          31      221403      228544
+  1.8155409E+10
+ JOB DISTRIBUTION, RANK, offset, onset          33      235687      242828
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          32      228545      235686
+  2.6886496E+10
+ JOB DISTRIBUTION, RANK, offset, onset          34      242829      249970
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          33      235687      242828
+  1.5067202E+10
+ JOB DISTRIBUTION, RANK, offset, onset          35      249971      257112
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          34      242829      249970
+  1.2507304E+10
+ JOB DISTRIBUTION, RANK, offset, onset          36      257113      264254
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          35      249971      257112
+  1.1692533E+10
+ JOB DISTRIBUTION, RANK, offset, onset          37      264255      271396
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          36      257113      264254
+  1.5950184E+10
+ JOB DISTRIBUTION, RANK, offset, onset          38      271397      278538
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          37      264255      271396
+  1.5943171E+10
+ JOB DISTRIBUTION, RANK, offset, onset          39      278539      285680
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          38      271397      278538
+  3.1203748E+10
+ JOB DISTRIBUTION, RANK, offset, onset          40      285681      292822
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          39      278539      285680
+  1.2471288E+10
+ JOB DISTRIBUTION, RANK, offset, onset          41      292823      299964
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          40      285681      292822
+  1.0855696E+10
+ JOB DISTRIBUTION, RANK, offset, onset          42      299965      307106
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          41      292823      299964
+  1.6113062E+10
+ JOB DISTRIBUTION, RANK, offset, onset          43      307107      314248
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          42      299965      307106
+  1.6969472E+10
+ JOB DISTRIBUTION, RANK, offset, onset          44      314249      321390
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          43      307107      314248
+  9.4809856E+09
+ JOB DISTRIBUTION, RANK, offset, onset          45      321391      328532
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          44      314249      321390
+  1.0197837E+10
+ rank max,min alpha           3   117.3098      0.0000000E+00
+ rank max,min alpha           2   85.51752      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          46      328533      335674
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          45      321391      328532
+  1.5039635E+10
+ rank max,min alpha           4   81.64410      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          47      335675      342816
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          46      328533      335674
+  1.5124686E+10
+ JOB DISTRIBUTION, RANK, offset, onset          48      342817      349958
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          47      335675      342816
+  1.6034408E+10
+ rank max,min alpha           8   76.82478      0.0000000E+00
+ rank max,min alpha           5   80.72553      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          49      349959      357100
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          48      342817      349958
+  1.9133471E+10
+ rank max,min alpha           7   104.3312      0.0000000E+00
+ rank max,min alpha           9   51.02164      0.0000000E+00
+ rank max,min alpha           6   170.8077      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          50      357101      364242
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          49      349959      357100
+  1.3320760E+10
+ rank max,min alpha          11   67.25246      0.0000000E+00
+ rank max,min alpha           1   86.45448      0.0000000E+00
+ rank max,min alpha          13   97.69255      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          51      364243      371384
+ rank max,min alpha          12   93.80689      0.0000000E+00
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          50      357101      364242
+ rank max,min alpha          10   103.5037      0.0000000E+00
+  1.8098909E+10
+ rank max,min alpha          15   93.45461      0.0000000E+00
+ rank max,min alpha          14   80.96856      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          52      371385      378526
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          51      364243      371384
+  1.0861689E+10
+ rank max,min alpha          16   61.76461      0.0000000E+00
+ rank max,min alpha          17   126.5433      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          53      378527      385668
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          52      371385      378526
+  1.2543017E+10
+ rank max,min alpha          19   84.13429      0.0000000E+00
+ rank max,min alpha          18   79.61903      0.0000000E+00
+ rank max,min alpha          22   88.96801      0.0000000E+00
+ rank max,min alpha          21   68.43968      0.0000000E+00
+ rank max,min alpha          20   82.23806      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          54      385669      392810
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          53      378527      385668
+  1.9185560E+10
+ rank max,min alpha          23   67.10991      0.0000000E+00
+ rank max,min alpha          28   57.82999      0.0000000E+00
+ rank max,min alpha          24   57.59552      0.0000000E+00
+ rank max,min alpha          27   143.4385      0.0000000E+00
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ JOB DISTRIBUTION, RANK, offset, onset          55      392811      399952
+ rank, off on set          54      385669      392810
+  1.4251392E+10
+ rank max,min alpha          25   149.5878      0.0000000E+00
+ rank max,min alpha          30   114.6181      0.0000000E+00
+ rank max,min alpha          29   73.27575      0.0000000E+00
+ rank max,min alpha          26   145.0123      0.0000000E+00
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ JOB DISTRIBUTION, RANK, offset, onset          56      399953      407094
+ rank, off on set          55      392811      399952
+  1.0954955E+10
+ rank max,min alpha          32   164.0332      0.0000000E+00
+ rank max,min alpha          35   63.22925      0.0000000E+00
+ rank max,min alpha          31   101.4332      0.0000000E+00
+ rank max,min alpha          33   123.6316      0.0000000E+00
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank max,min alpha          34   78.66573      0.0000000E+00
+ rank, off on set          56      399953      407094
+ JOB DISTRIBUTION, RANK, offset, onset          57      407095      414236
+  1.3362781E+10
+ rank max,min alpha          37   84.85694      0.0000000E+00
+ rank max,min alpha          39   92.03714      0.0000000E+00
+ rank max,min alpha          36   104.4812      0.0000000E+00
+ rank max,min alpha          38   158.4997      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          58      414237      421378
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          57      407095      414236
+  1.1603523E+10
+ rank max,min alpha          42   76.08359      0.0000000E+00
+ rank max,min alpha          40   82.76786      0.0000000E+00
+ rank max,min alpha          41   110.6851      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          59      421379      428520
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank max,min alpha          43   91.29319      0.0000000E+00
+ rank, off on set          58      414237      421378
+  2.2595131E+10
+ rank max,min alpha          44   68.39044      0.0000000E+00
+ rank max,min alpha          48   104.6373      0.0000000E+00
+ rank max,min alpha          49   67.79571      0.0000000E+00
+ rank max,min alpha          45   154.0457      0.0000000E+00
+ rank max,min alpha          47   77.08581      0.0000000E+00
+ rank max,min alpha          46   90.10030      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          60      428521      435662
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          59      421379      428520
+  1.4232698E+10
+ JOB DISTRIBUTION, RANK, offset, onset          61      435663      442804
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          60      428521      435662
+  8.2093297E+09
+ JOB DISTRIBUTION, RANK, offset, onset          62      442805      449946
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          61      435663      442804
+  1.3309237E+10
+ rank max,min alpha          51   70.94280      0.0000000E+00
+ rank max,min alpha          50   131.7535      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          63      449947      457088
+ rank max,min alpha          52   74.19965      0.0000000E+00
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          62      442805      449946
+  1.0174490E+10
+ JOB DISTRIBUTION, RANK, offset, onset          64      457089      464230
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          63      449947      457088
+  1.4119145E+10
+ rank max,min alpha          53   141.6713      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          65      464231      471372
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          64      457089      464230
+  1.4267407E+10
+ rank max,min alpha          54   104.8932      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          66      471373      478514
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          65      464231      471372
+  1.5034247E+10
+ rank max,min alpha          55   117.6604      0.0000000E+00
+ rank max,min alpha          56   78.16498      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          67      478515      485656
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          66      471373      478514
+  1.3233791E+10
+ rank max,min alpha          57   95.99574      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          68      485657      492798
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          67      478515      485656
+  9.4947717E+09
+ JOB DISTRIBUTION, RANK, offset, onset          69      492799      499940
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          68      485657      492798
+  1.0834074E+10
+ JOB DISTRIBUTION, RANK, offset, onset          70      499941      507082
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          69      492799      499940
+  1.3265894E+10
+ rank max,min alpha          60   61.58529      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          71      507083      514224
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          70      499941      507082
+  1.4242681E+10
+ rank max,min alpha          59   71.55773      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          72      514225      521366
+ rank max,min alpha          61   80.88123      0.0000000E+00
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          71      507083      514224
+  9.5323392E+09
+ JOB DISTRIBUTION, RANK, offset, onset          73      521367      528508
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          72      514225      521366
+  1.7122538E+10
+ rank max,min alpha          62   87.00179      0.0000000E+00
+ rank max,min alpha          63   66.06873      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          74      528509      535650
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          73      521367      528508
+  1.2424742E+10
+ JOB DISTRIBUTION, RANK, offset, onset          75      535651      542792
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          74      528509      535650
+  1.0179240E+10
+ rank max,min alpha          64   73.16234      0.0000000E+00
+ rank max,min alpha          65   103.6322      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          76      542793      549934
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          75      535651      542792
+  1.8133926E+10
+ rank max,min alpha          66   73.93499      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          77      549935      557076
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          76      542793      549934
+  2.2754640E+10
+ JOB DISTRIBUTION, RANK, offset, onset          78      557077      564218
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          77      549935      557076
+  1.7111823E+10
+ rank max,min alpha          67   91.26868      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          79      564219      571360
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          78      557077      564218
+  2.2749391E+10
+ rank max,min alpha          68   91.45228      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          80      571361      578502
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          79      564219      571360
+  8.8935885E+09
+ rank max,min alpha          69   55.77845      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          81      578503      585645
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          80      571361      578502
+  3.9869985E+10
+ rank max,min alpha          58   145.9187      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          82      585646      592788
+ rank max,min alpha          70   84.85752      0.0000000E+00
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          81      578503      585645
+  1.4201383E+10
+ JOB DISTRIBUTION, RANK, offset, onset          83      592789      599931
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          82      585646      592788
+  1.5072536E+10
+ rank max,min alpha          71   73.01246      0.0000000E+00
+ rank max,min alpha          73   91.99165      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          84      599932      607074
+ rank max,min alpha          72   110.3705      0.0000000E+00
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          83      592789      599931
+  1.7087054E+10
+ rank max,min alpha          74   82.33321      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          85      607075      614217
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          84      599932      607074
+  1.4179587E+10
+ JOB DISTRIBUTION, RANK, offset, onset          86      614218      621360
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          85      607075      614217
+  1.7151250E+10
+ rank max,min alpha          75   125.9332      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          87      621361      628503
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          86      614218      621360
+  1.5940335E+10
+ rank max,min alpha          76   176.4306      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          88      628504      635646
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          87      621361      628503
+  1.8028687E+10
+ JOB DISTRIBUTION, RANK, offset, onset          89      635647      642789
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          88      628504      635646
+  1.5971012E+10
+ rank max,min alpha          77   145.1345      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          90      642790      649932
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          89      635647      642789
+  1.5018638E+10
+ JOB DISTRIBUTION, RANK, offset, onset          91      649933      657075
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          90      642790      649932
+  1.4217973E+10
+ rank max,min alpha          78   170.3666      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          92      657076      664218
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          91      649933      657075
+  2.2797842E+10
+ rank max,min alpha          79   76.60005      0.0000000E+00
+ rank max,min alpha          80   150.5204      0.0000000E+00
+ rank max,min alpha          81   67.62504      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          93      664219      671361
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          92      657076      664218
+  2.3911371E+10
+ JOB DISTRIBUTION, RANK, offset, onset          94      671362      678504
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          93      664219      671361
+  1.4228746E+10
+ rank max,min alpha          82   76.23701      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          95      678505      685647
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          94      671362      678504
+  2.9599734E+10
+ rank max,min alpha          83   99.90813      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          96      685648      692790
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          95      678505      685647
+  1.2432961E+10
+ rank max,min alpha          84   86.52091      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          97      692791      699933
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          96      685648      692790
+  8.2683075E+09
+ rank max,min alpha          85   96.63882      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          98      699934      707076
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          97      692791      699933
+  2.8011991E+10
+ rank max,min alpha          86   113.9985      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset          99      707077      714219
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          98      699934      707076
+  1.0916220E+10
+ rank max,min alpha          87   95.57564      0.0000000E+00
+ rank max,min alpha          88   98.46328      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset         100      714220      721362
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set          99      707077      714219
+  1.0868717E+10
+ rank max,min alpha          89   83.82467      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset         101      721363      728505
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set         100      714220      721362
+  1.9121203E+10
+ rank max,min alpha          90   116.4353      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset         102      728506      735648
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set         101      721363      728505
+  2.1587534E+10
+ rank max,min alpha          91   162.7658      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset         103      735649      742791
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set         102      728506      735648
+  1.4091844E+10
+ rank max,min alpha          92   111.1097      0.0000000E+00
+ JOB DISTRIBUTION, RANK, offset, onset           0           1        7142
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ visual_calpha called.. nalpha=  3.057243999432851E-009
+ rank, off on set         103      735649      742791
+ rank, off on set           0           1        7142
+  1.7066197E+10
+  1.2484740E+10
+ rank max,min alpha          93   60.09478      0.0000000E+00
+ rank max,min alpha          95   85.42209      0.0000000E+00
+ rank max,min alpha          94   199.4533      0.0000000E+00
+ rank max,min alpha          96   64.19344      0.0000000E+00
+ rank max,min alpha          98   69.34605      0.0000000E+00
+ rank max,min alpha          97   146.2000      0.0000000E+00
+ rank max,min alpha          99   86.01616      0.0000000E+00
+ rank max,min alpha         100   98.95432      0.0000000E+00
+ rank max,min alpha           0   98.54001      0.0000000E+00
+ RANK0 : done :time    29.79147    
+ Recv,rank=           1
+ Recv,rank=           2
+ Recv,rank=           3
+ rank max,min alpha         101   143.7368      0.0000000E+00
+ Recv,rank=           4
+ rank max,min alpha         102   84.65379      0.0000000E+00
+ rank max,min alpha         103   113.4190      0.0000000E+00
+ Recv,rank=           5
+ Recv,rank=           6
+ Recv,rank=           7
+ Recv,rank=           8
+ Recv,rank=           9
+ Recv,rank=          10
+ Recv,rank=          11
+ Recv,rank=          12
+ Recv,rank=          13
+ Recv,rank=          14
+ Recv,rank=          15
+ Recv,rank=          16
+ Recv,rank=          17
+ Recv,rank=          18
+ Recv,rank=          19
+ Recv,rank=          20
+ Recv,rank=          21
+ Recv,rank=          22
+ Recv,rank=          23
+ Recv,rank=          24
+ Recv,rank=          25
+ Recv,rank=          26
+ Recv,rank=          27
+ Recv,rank=          28
+ Recv,rank=          29
+ Recv,rank=          30
+ Recv,rank=          31
+ Recv,rank=          32
+ Recv,rank=          33
+ Recv,rank=          34
+ Recv,rank=          35
+ Recv,rank=          36
+ Recv,rank=          37
+ Recv,rank=          38
+ Recv,rank=          39
+ Recv,rank=          40
+ Recv,rank=          41
+ Recv,rank=          42
+ Recv,rank=          43
+ Recv,rank=          44
+ Recv,rank=          45
+ Recv,rank=          46
+ Recv,rank=          47
+ Recv,rank=          48
+ Recv,rank=          49
+ Recv,rank=          50
+ Recv,rank=          51
+ Recv,rank=          52
+ Recv,rank=          53
+ Recv,rank=          54
+ Recv,rank=          55
+ Recv,rank=          56
+ Recv,rank=          57
+ Recv,rank=          58
+ Recv,rank=          59
+ Recv,rank=          60
+ Recv,rank=          61
+ Recv,rank=          62
+ Recv,rank=          63
+ Recv,rank=          64
+ Recv,rank=          65
+ Recv,rank=          66
+ Recv,rank=          67
+ Recv,rank=          68
+ Recv,rank=          69
+ Recv,rank=          70
+ Recv,rank=          71
+ Recv,rank=          72
+ Recv,rank=          73
+ Recv,rank=          74
+ Recv,rank=          75
+ Recv,rank=          76
+ Recv,rank=          77
+ Recv,rank=          78
+ Recv,rank=          79
+ Recv,rank=          80
+ Recv,rank=          81
+ Recv,rank=          82
+ Recv,rank=          83
+ Recv,rank=          84
+ Recv,rank=          85
+ Recv,rank=          86
+ Recv,rank=          87
+ Recv,rank=          88
+ Recv,rank=          89
+ Recv,rank=          90
+ Recv,rank=          91
+ Recv,rank=          92
+ Recv,rank=          93
+ Recv,rank=          94
+ Recv,rank=          95
+ Recv,rank=          96
+ Recv,rank=          97
+ Recv,rank=          98
+ Recv,rank=          99
+ Recv,rank=         100
+ Recv,rank=         101
+ Recv,rank=         102
+ Recv,rank=         103
+ max,min alpha   237.6760       1.565497    
+ coupled frac=  0.626805696000000     
+ New file created :
+ ../output/15.132matrix_alphastar.dat                                           
+                                                                                
+                       
+ Finish : time, z   41.52269       15.1319999694824     
