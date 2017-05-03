@@ -33,7 +33,7 @@ END SUBROUTINE read_SED
 !! This subroutine calculates the Lyman-alpha coupling coefficient.
 !! This takes the halos subset (myoffset,myonset) from rank 'myid'.
 ! 
-subroutine visual_calpha(myoffset,myonset,myid)
+subroutine visual_calpha(myoffset,myonset,myid) 
 	use param
 	use func
 	IMPLICIT NONE
@@ -48,7 +48,7 @@ subroutine visual_calpha(myoffset,myonset,myid)
 
 	if((myoffset >0) .and. (myonset>=myoffset)) then
 
-	call zeffectlyman(comm_redshift,arr)
+	call zeffectlyman(comm_redshifts,arr)
 	write(*,*) 'visual_calpha called.. nalpha=',maxval(arr)
 write(*,*) 'rank, off on set', myid, myoffset, myonset
 write(*,*) MAXVAL(DAT_OVERLAP(1,myoffset:myonset))
@@ -96,6 +96,7 @@ end subroutine visual_calpha
 !! This uses 1/r/r relation to calculate x_alpha
 !!
 SUBROUTINE zeffectlyman(z,alpha)
+!!HR: z is array of zs now, need to do this for all z
 	use param
 	use func
 	IMPLICIT NONE
@@ -103,7 +104,7 @@ SUBROUTINE zeffectlyman(z,alpha)
 	real(8),dimension(n_cell),intent(out)::alpha
 	real(8),dimension(n_sed)::lamda,lum
 	real(8)::r,zr,lr,l1,l0,e1,e0,en,nu_al,del_l,rp
-	integer::i,j,k
+	integer::i,j,k,ii
 	real(8)::xz,res,del_nu, nlya_emission
 
 	call read_SED(lamda, lum)
@@ -111,13 +112,16 @@ SUBROUTINE zeffectlyman(z,alpha)
 	del_nu=c_light/angstrom_cm/lamda_alpha/lamda_alpha !!frequency difference for del lamda = 1 A
 	nu_al=E_lyalpha/hplanck_ev !Lyman alpha freq in Hz
 
+     
 
+
+!!HR: don't start at 1 cell start at rmin, find rmin from redshift
 	DO i=1,n_cell	!!Do we need to increase the size.. photon escaping?? One can try using a increased value
 		r=dble(i)*box/hlittle/n_cell !comoving distace at grid points in Mpc
 		zr=rtoz(r,z)
 		lr=lamda_alpha*(1.0+zr)/(1.0+z)	!!wavelength in the continuum SEd which redshifted to Lyman alpha at distance r
 		if(lr<lamda_hi) then
-			alpha(i) = 0.0	!!above EHI, photons will be absorbed for ionization
+			alpha(i) = alpha(i) 	!!above EHI, photons will be absorbed for ionization
 
 		else 
 			DO j=1,n_sed

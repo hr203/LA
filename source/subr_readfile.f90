@@ -129,4 +129,12 @@ subroutine check_boundary(x, n, i, j, k)
 
 end subroutine check_boundary
 
+!!!! HR: finds the maximum redshift that needs to be considered
+!function z_maxi(z)
+!     implicit none
+!     real(8),intent(in)::z
+!     real(8)::z_max
+!
+!     z_max = (z+1)/0.75 - 1
+!end function
 

@@ -1,3 +1,4 @@
+
 subroutine count_num_halo(myid, z, nhalo)
 	use param
 	use param_halo
@@ -287,4 +288,24 @@ end if
 
 END SUBROUTINE halo_move
 
+!!! HR: finds the maximum redshift that needs to be considered
+!!! fills comm_redshifts with relevant redshifts and zeros
+subroutine z_relevant(z,check_min)
+     use param
+     implicit none
+     integer::counter
+     real(8),intent(in)::z,check_min
+     real(8)::z_max
+
+     z_max = (z+1)/0.75 - 1
+     write(*,*) "Redshift range: ", z_max, " to ",z
+     do counter=check_min,num_checkpoints
+        if (z_checkpoint(counter)>=z .and. z_checkpoint(counter)<=z_max) then
+            comm_redshifts(counter)=z_checkpoint(counter)
+        else
+            comm_redshifts(counter)=0.0
+        endif
+     enddo
+
+end subroutine
 

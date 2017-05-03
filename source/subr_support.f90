@@ -135,5 +135,3 @@ function hubble_constant(z)
          &omega_r*(1.d0+z)**4+omega_l)
 end function hubble_constant
 
-
-

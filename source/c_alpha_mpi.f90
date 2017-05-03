@@ -11,7 +11,7 @@ program mpi_sim
      	include 'mpif.h'
       	integer  ierr, offset, onset, i, j, k, tag1, &
      	&         tag2, tag3, tag4, source, check,count,check_min
-      	real(8) ::   mysum, mysum1, total_sum,total_sum1,af
+      	real(8) ::   mysum, mysum1, total_sum,total_sum1,af,z_high
 	real(4) :: time
       	integer  status(MPI_STATUS_SIZE),fstat
   	character(180) :: ifile,ofile
@@ -34,9 +34,10 @@ program mpi_sim
 
 !C***** Master task only ****** read
       if (rank .eq. 0) then
+                !!cube and cells are used to find neighbours
 		call readcube
 		call read_redshift
-		call cal_age_timestep
+		call cal_age_timestep !don't need age anymore
 
 		halo_age_new=0
 		halo_mass_old=0.0
@@ -44,7 +45,6 @@ program mpi_sim
 		write(*,*) '# of checkpoints = ',num_checkpoints
 	
 		open(unit=16, file='x_alpha.dat')
-
 
 		call MPI_BCAST(num_checkpoints,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 		call MPI_BCAST(spdim,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
@@ -61,17 +61,21 @@ program mpi_sim
 	else
 		check_min=1
 	end if
-
-DO check=check_min,num_checkpoints
+        
+DO check=check_min+4,num_checkpoints !for each redshift in red.dat
 	IF(rank ==0) THEN
-		comm_redshift=z_checkpoint(check)
+        
+		comm_redshift=z_checkpoint(check) !get redshift
+                !HR: get number of redshifts in range and add redshifts comm_redshifts
+                call z_relevant(comm_redshift,comm_redshifts,check_min)
 
 		write(*,*) ''
-		write(*,*) 'Processing redshift = ',comm_redshift
-
+		write(*,*) 'Processing redshift = ',comm_redshift 
+                write(*,*) 'The relevant redshifts here are: ', pack(comm_redshifts,comm_redshifts /= 0)
 
 		call count_num_halo(rank, comm_redshift, num_halo)
 		call MPI_BCAST(comm_redshift,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
+		call MPI_BCAST(comm_redshifts,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
 		call MPI_BCAST(num_halo,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 if(num_halo>0) then
 		allocate(dat_overlap(5,num_halo))
@@ -81,10 +85,6 @@ if(num_halo>0) then
 
 		call cpu_time(time)
 		write(*,*) 'Halofile reading : done : time ',time
-
-
-
-
 
 		DO i=1,numtasks-1
 			call para_range(num_halo, numtasks, i, offset, onset)

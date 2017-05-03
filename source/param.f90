@@ -44,7 +44,11 @@ MODULE param
 
 !!!SIMULATION PARAMETERS
 
-
+        real(8), dimension(30), parameter :: redshifts = (/23.268,22.100, &
+        21.062,20.134,19.298,18.540,17.848,17.215,16.633,16.095,15.596,15.132, &
+        14.699,14.294,13.914,13.557,13.221,12.903,12.603,12.318,12.048,11.791, &
+        11.546,11.313,11.090,10.877,10.673,10.478,10.290,10.110/)
+        integer, parameter :: noZ = 30
 	real(8), parameter :: box = 244.0 !!box length in cMpc/h unit
 	integer, parameter :: nc = 8000
 	integer, parameter :: n_cell = 250	!!grid number in simulation box
@@ -66,7 +70,7 @@ MODULE param
 
 
 	integer, parameter :: max_input=300	!!Number of redshift bins
-	real(8), dimension(max_input) :: z_checkpoint, age_checkpoint
+	real(8), dimension(max_input) :: z_checkpoint,age_checkpoint,comm_redshifts
 
 	!integer,parameter :: max_halos=80000000
 	!real(4), dimension(12, max_halos):: dat_overlap	!!This carry all the information about the haloes
@@ -79,10 +83,10 @@ MODULE param
 !! SIMULATION PARAMETERS
 
  	character(*), parameter :: comm_path    = '../' 
- 	character(*), parameter :: halolist_path ='/lustre/scratch/astro/hr203/244Mpc_f2_8.2S_wstars/sources/' !comm_path//'halo_files/'	
+ 	character(*), parameter :: halolist_path ='/lustre/scratch/astro/hr203/newruns/C2-Ray3Dm1D_Helium_wquasars/sources/old_sourcelists/' !comm_path//'halo_files/'	
  	character(*), parameter :: output_path    = comm_path//'output/' 
  	character(*), parameter :: pspath = comm_path//'input/'	!!put the SED files here
- 	character(*), parameter :: checkpoints =comm_path//'reion' !!This file contains the redshifts to be considered for the simulation.. follow decending order
+ 	character(*), parameter :: checkpoints =comm_path//'red.dat' !!This file contains the redshifts to be considered for the simulation.. follow decending order
  	character(*), parameter :: cellpath=comm_path//'cellpath/'	!!This contains the cubes to generate sphere around a point
 
 
@@ -104,7 +108,7 @@ MODULE param
 
 	real(8):: comm_redshift, gap_timestep
 	integer :: spdim, num_halo, rank, numtasks, num_checkpoints, redshift_loop_index
-
+        !real(8),dimension(:),allocatable :: comm_redshifts
 
 
 
