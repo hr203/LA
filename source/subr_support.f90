@@ -106,7 +106,6 @@ SUBROUTINE timegap(z1,z2, delt)
 
 END SUBROUTINE timegap
 
-
 FUNCTION fn_timegap(z)
 	IMPLICIT NONE
 	real(8),intent(in)::z

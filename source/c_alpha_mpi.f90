@@ -81,7 +81,7 @@ if(num_halo>0) then
 		allocate(dat_overlap(5,num_halo))
 
 
-		call read_halofile_track_age(rank, comm_redshift)
+		!call read_halofile_track_age(rank, comm_redshift)
 
 		call cpu_time(time)
 		write(*,*) 'Halofile reading : done : time ',time

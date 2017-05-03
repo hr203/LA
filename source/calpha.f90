@@ -100,49 +100,51 @@ SUBROUTINE zeffectlyman(z,alpha)
 	use param
 	use func
 	IMPLICIT NONE
-	real(8),intent(in)::z
+	real(8),dimension(num_checkpoints),intent(in)::z
 	real(8),dimension(n_cell),intent(out)::alpha
 	real(8),dimension(n_sed)::lamda,lum
 	real(8)::r,zr,lr,l1,l0,e1,e0,en,nu_al,del_l,rp
 	integer::i,j,k,ii
-	real(8)::xz,res,del_nu, nlya_emission
+	real(8)::xz,res,del_nu, nlya_emission,time_Myr,dis
 
 	call read_SED(lamda, lum)
 
 	del_nu=c_light/angstrom_cm/lamda_alpha/lamda_alpha !!frequency difference for del lamda = 1 A
 	nu_al=E_lyalpha/hplanck_ev !Lyman alpha freq in Hz
 
-     
+        DO ii=1,num_checkpoints !Go through all redshifts
 
+            if (z(ii)/=0.0) then !Check this redshift is relevant
 
-!!HR: don't start at 1 cell start at rmin, find rmin from redshift
-	DO i=1,n_cell	!!Do we need to increase the size.. photon escaping?? One can try using a increased value
-		r=dble(i)*box/hlittle/n_cell !comoving distace at grid points in Mpc
-		zr=rtoz(r,z)
-		lr=lamda_alpha*(1.0+zr)/(1.0+z)	!!wavelength in the continuum SEd which redshifted to Lyman alpha at distance r
-		if(lr<lamda_hi) then
-			alpha(i) = alpha(i) 	!!above EHI, photons will be absorbed for ionization
+                	DO i=1,n_cell	!!Do we need to increase the size.. photon escaping?? One can try using a increased value
+		                r=dble(i)*box/hlittle/n_cell !comoving distace at grid points in Mpc
+                		zr=rtoz(r,comm_redshift)
+                                
+                		lr=lamda_alpha*(1.0+zr)/(1.0+z(ii))	!!wavelength in the continuum SEd which redshifted to Lyman alpha at distance r
+                		if(lr<lamda_hi .and. zr<z(ii)) then
+                			alpha(i) = alpha(i) 	!!above EHI, photons will be absorbed for ionization and if zr is less than current redshift then this was done in a previous timestep
+                
+                		else 
+                			DO j=1,n_sed
+                				if(lamda(j)>=lr) then
+                					l1=lamda(j)
+                					l0=lamda(j-1)
+                					e1=lum(j)
+                					e0=lum(j-1)
+                					exit
+                				end if
+		                	END DO
 
-		else 
-			DO j=1,n_sed
-				if(lamda(j)>=lr) then
-					l1=lamda(j)
-					l0=lamda(j-1)
-					e1=lum(j)
-					e0=lum(j-1)
-					exit
-				end if
-			END DO
-
-			en=e0+ (lr-l0)*(e1-e0)/(l1-l0) !linear interpolation !energy per A per sec in erg
-			del_l=(1.0+zr)/(1.0+z)! wave length differ for which  at r the wavelength differ will be 1 A!c_light/nu_al/nu_al*(1+z)/(1+zr)*1e8 !del lamda in A for unit frequency at r
-			rp=r/(1.0+zr)*megaparsec
-			alpha(i)=en*del_l/4.0/pi/rp/rp/del_nu*erg_ev/E_lyalpha
-			alpha(i)=1.66e11/(1.0+zr)*alpha(i)*f_esc_lya  ! ly coeffi for unit mass
-
-		end if
-	END DO
-
+                			en=e0+ (lr-l0)*(e1-e0)/(l1-l0) !linear interpolation !energy per A per sec in erg
+                			del_l=(1.0+zr)/(1.0+z(ii))! wave length differ for which  at r the wavelength differ will be 1 A!c_light/nu_al/nu_al*(1+z)/(1+zr)*1e8 !del lamda in A for unit frequency at r
+                			rp=r/(1.0+zr)*megaparsec
+                			alpha(i)=en*del_l/4.0/pi/rp/rp/del_nu*erg_ev/E_lyalpha
+                			alpha(i)=1.66e11/(1.0+zr)*alpha(i)*f_esc_lya  ! ly coeffi for unit mass
+                
+                		end if
+                	END DO
+            end if
+        ENDDO
 
 END SUBROUTINE zeffectlyman
 
