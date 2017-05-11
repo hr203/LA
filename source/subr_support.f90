@@ -106,6 +106,7 @@ SUBROUTINE timegap(z1,z2, delt)
 
 END SUBROUTINE timegap
 
+
 FUNCTION fn_timegap(z)
 	IMPLICIT NONE
 	real(8),intent(in)::z
@@ -133,4 +134,6 @@ function hubble_constant(z)
 	hubble_constant=Ho*SQRT(omega_k*(1.d0+z)**2+omega_m*(1.d0+z)**3+&
          &omega_r*(1.d0+z)**4+omega_l)
 end function hubble_constant
+
+
 

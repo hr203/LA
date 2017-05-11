@@ -10,8 +10,9 @@ program mpi_sim
 	implicit none 
      	include 'mpif.h'
       	integer  ierr, offset, onset, i, j, k, tag1, &
-     	&         tag2, tag3, tag4, source, check,count,check_min
-      	real(8) ::   mysum, mysum1, total_sum,total_sum1,af,z_high
+     	&         tag2, tag3, tag4, source, check,check2,count,check_min,counter
+      	real(8) ::   mysum, mysum1, total_sum,total_sum1,af
+!        real(8),dimension(:),allocatable::comm_redshifts2
 	real(4) :: time
       	integer  status(MPI_STATUS_SIZE),fstat
   	character(180) :: ifile,ofile
@@ -34,10 +35,9 @@ program mpi_sim
 
 !C***** Master task only ****** read
       if (rank .eq. 0) then
-                !!cube and cells are used to find neighbours
 		call readcube
 		call read_redshift
-		call cal_age_timestep !don't need age anymore
+		call cal_age_timestep
 
 		halo_age_new=0
 		halo_mass_old=0.0
@@ -45,6 +45,7 @@ program mpi_sim
 		write(*,*) '# of checkpoints = ',num_checkpoints
 	
 		open(unit=16, file='x_alpha.dat')
+
 
 		call MPI_BCAST(num_checkpoints,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 		call MPI_BCAST(spdim,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
@@ -61,30 +62,30 @@ program mpi_sim
 	else
 		check_min=1
 	end if
-        
-DO check=check_min+4,num_checkpoints !for each redshift in red.dat
-	IF(rank ==0) THEN
-        
-		comm_redshift=z_checkpoint(check) !get redshift
-                !HR: get number of redshifts in range and add redshifts comm_redshifts
-                call z_relevant(comm_redshift,comm_redshifts,check_min)
 
+DO check=check_min,num_checkpoints
+        if (num_checkpoints>max_input) write(*,*) "WARNING comm_redshifts not large enough"
+	comm_redshift=z_checkpoint(check)
+        call z_relevant(comm_redshift,comm_redshifts,check_min)
+	IF(rank ==0) THEN
 		write(*,*) ''
-		write(*,*) 'Processing redshift = ',comm_redshift 
-                write(*,*) 'The relevant redshifts here are: ', pack(comm_redshifts,comm_redshifts /= 0)
+		write(*,*) 'Processing redshift = ',comm_redshift
+                write(*,*) "Relevant redshifts here are:",pack(comm_redshifts,comm_redshifts/=0.0)
 
 		call count_num_halo(rank, comm_redshift, num_halo)
 		call MPI_BCAST(comm_redshift,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
-		call MPI_BCAST(comm_redshifts,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
 		call MPI_BCAST(num_halo,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 if(num_halo>0) then
 		allocate(dat_overlap(5,num_halo))
 
-
-		!call read_halofile_track_age(rank, comm_redshift)
+		call read_halofile_track_age(rank, comm_redshift)
 
 		call cpu_time(time)
 		write(*,*) 'Halofile reading : done : time ',time
+
+
+
+
 
 		DO i=1,numtasks-1
 			call para_range(num_halo, numtasks, i, offset, onset)
@@ -163,9 +164,6 @@ end if
 
 	END IF 
 
- 
- 
-
 	if(rank .ne. 0) then
 		call MPI_RECV(offset, 1, MPI_INTEGER, 0, tag1, MPI_COMM_WORLD, status, ierr)
 		call MPI_RECV(onset, 1, MPI_INTEGER, 0, tag2, MPI_COMM_WORLD, status, ierr)
@@ -187,7 +185,7 @@ end if
 	end if
 		deallocate(dat_overlap)
 	end if
-
+!end loop here
 end do
 
       call MPI_FINALIZE(ierr)

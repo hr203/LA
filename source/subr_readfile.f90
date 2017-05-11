@@ -21,10 +21,10 @@ use param
 	51  close(11)
 
 
-	write(*,*) 'halofinds to recompose:'
-	  do i=1,num_checkpoints
-	    write(*,'(f5.1)') z_checkpoint(i)
-	  enddo
+!	write(*,*) 'halofinds to recompose:'
+	!  do i=1,num_checkpoints
+	!    write(*,'(f5.1)') z_checkpoint(i)
+	!  enddo
 
 
 
@@ -47,10 +47,10 @@ subroutine cal_age_timestep
 	END DO
 	age_checkpoint(num_checkpoints)=age_checkpoint(num_checkpoints-1) + 10.0
 
-	write(*,*) 'Age to recompose:'
-	  do i=1,num_checkpoints
-	    write(*,'(f5.1)') age_checkpoint(i)
-	  enddo
+!	write(*,*) 'Age to recompose:'
+!	  do i=1,num_checkpoints
+!	    write(*,'(f5.1)') age_checkpoint(i)
+!	  enddo
 
 end subroutine cal_age_timestep
 
@@ -129,12 +129,4 @@ subroutine check_boundary(x, n, i, j, k)
 
 end subroutine check_boundary
 
-!!!! HR: finds the maximum redshift that needs to be considered
-!function z_maxi(z)
-!     implicit none
-!     real(8),intent(in)::z
-!     real(8)::z_max
-!
-!     z_max = (z+1)/0.75 - 1
-!end function
 

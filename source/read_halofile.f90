@@ -1,4 +1,3 @@
-
 subroutine count_num_halo(myid, z, nhalo)
 	use param
 	use param_halo
@@ -22,7 +21,8 @@ subroutine count_num_halo(myid, z, nhalo)
 	write(z_s,'(f7.3)') z
 	z_s=adjustl(z_s)
 
-	ifile=halolist_path//z_s(1:len_trim(z_s))//"-coarsest_wsubgrid_sources.dat"
+!	ifile=halolist_path//z_s(1:len_trim(z_s))//"-coarsest_wsubgrid_sources.dat"
+	ifile=halolist_path//z_s(1:len_trim(z_s))//"-halos.dat"
 	write(*,*) 'halo file, z', ifile, z
 	open(unit=13,file=ifile, status='old')
 	read(13, *) nhalo
@@ -60,7 +60,8 @@ integer, parameter::nmax=100000000
 	write(z_s,'(f7.3)') z
 	z_s=adjustl(z_s)
 
-	ifile=halolist_path//z_s(1:len_trim(z_s))//"-coarsest_wsubgrid_sources.dat"
+        !ifile=halolist_path//z_s(1:len_trim(z_s))//"-coarsest_wsubgrid_sources.dat"
+	ifile=halolist_path//z_s(1:len_trim(z_s))//"-halos.dat"
 	write(*,*) 'halo file, z', ifile, z
 	open(unit=13,file=ifile, status='old')
 	read(13, *) nhalo_max
@@ -288,8 +289,6 @@ end if
 
 END SUBROUTINE halo_move
 
-!!! HR: finds the maximum redshift that needs to be considered
-!!! fills comm_redshifts with relevant redshifts and zeros
 subroutine z_relevant(z,check_min)
      use param
      implicit none
@@ -299,7 +298,7 @@ subroutine z_relevant(z,check_min)
 
      z_max = (z+1)/0.75 - 1
      write(*,*) "Redshift range: ", z_max, " to ",z
-     do counter=check_min,num_checkpoints
+     do counter=1,num_checkpoints
         if (z_checkpoint(counter)>=z .and. z_checkpoint(counter)<=z_max) then
             comm_redshifts(counter)=z_checkpoint(counter)
         else
